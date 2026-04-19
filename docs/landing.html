@@ -48,7 +48,30 @@
   .eyebrow { display: inline-block; font-family: var(--mono); font-size: 12px; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; padding: 6px 14px; border: 1px solid var(--accent); border-radius: 100px; margin-bottom: 28px; }
   h1 { font-size: 68px; font-weight: 800; line-height: 1.03; letter-spacing: -0.025em; margin: 0 0 22px; background: linear-gradient(135deg, var(--ink) 0%, var(--accent) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
   .tagline { font-size: 24px; color: var(--ink-muted); line-height: 1.45; margin: 0 0 40px; max-width: 720px; font-weight: 400; }
-  .hero-cta { display: flex; gap: 14px; flex-wrap: wrap; }
+  .hero-cta { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; }
+
+  /* Scenario cards — the IKEA-style "when you're in X situation" grid */
+  .scenarios { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 40px 0 8px; max-width: 720px; }
+  @media (max-width: 560px) {
+    .scenarios { grid-template-columns: 1fr; }
+    h1 { font-size: 44px !important; }
+    h2 { font-size: 30px !important; }
+    .tagline { font-size: 18px !important; }
+    .hero { padding: 70px 0 40px !important; }
+    section { padding: 50px 0 !important; }
+  }
+  @media (max-width: 780px) {
+    h1 { font-size: 52px; }
+    h2 { font-size: 34px; }
+    .tagline { font-size: 20px; }
+  }
+  pre { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .scen-card { display: flex; gap: 16px; align-items: flex-start; padding: 18px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; transition: border-color .15s, transform .15s; }
+  .scen-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .scen-icon { font-size: 24px; line-height: 1; flex-shrink: 0; filter: grayscale(0.1); }
+  .scen-text { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .scen-text b { font-size: 15px; font-weight: 600; color: var(--ink); }
+  .scen-text span { font-size: 13px; color: var(--ink-muted); line-height: 1.5; }
   .btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 26px; border-radius: 10px; font-weight: 600; font-size: 15px; border: 1px solid var(--border-strong); }
   .btn-primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
   .btn-primary:hover { background: #d87251; border-color: #d87251; border-bottom-color: #d87251; }
@@ -127,10 +150,47 @@
   <span class="eyebrow">Open source · MIT · local-first</span>
   <h1>JARVIS v3</h1>
   <p class="tagline">
-    A voice assistant with two brains: a fast conversational LLM that speaks for you,
-    and a tool-calling agent that actually runs the commands. Wake-word triggered,
-    half-duplex, entirely on your machine.
+    <strong style="color: var(--ink);">比键盘带宽更大的人机交互,专为居家场景设计。</strong><br>
+    说话比打字快。眼睛比手空闲得多。
   </p>
+
+  <div class="scenarios">
+    <div class="scen-card">
+      <div class="scen-icon">🛏</div>
+      <div class="scen-text">
+        <b>躺床上不想起</b>
+        <span>查昨天的笔记 · 开电脑上的文件 · 记今天的待办</span>
+      </div>
+    </div>
+    <div class="scen-card">
+      <div class="scen-icon">🍳</div>
+      <div class="scen-text">
+        <b>手是油的</b>
+        <span>汇报今天日程 · 天气 · 新闻</span>
+      </div>
+    </div>
+    <div class="scen-card">
+      <div class="scen-icon">🎮</div>
+      <div class="scen-text">
+        <b>边玩边起草</b>
+        <span>PPT 大纲 · 搜资料 · 写邮件草稿</span>
+      </div>
+    </div>
+    <div class="scen-card">
+      <div class="scen-icon">🚿</div>
+      <div class="scen-text">
+        <b>刚洗完澡</b>
+        <span>查合同进度 · 设下午提醒 · 读条未读消息</span>
+      </div>
+    </div>
+  </div>
+
+  <p class="tagline" style="margin-top: 36px; font-size: 17px; color: var(--ink-muted);">
+    本质上: 一个 <strong style="color: var(--ink);">本地运行</strong> 的语音助手 — 双脑架构让它既快又能
+    真干事。潜意识 LLM 负责对话,主意识 Agent 负责执行。唤醒词触发,半双工,
+    所有模型跑在你自己的 GPU 上。
+  </p>
+
   <div class="hero-cta">
     <a class="btn btn-primary" href="https://github.com/CarverXx/jarvis-v3">View on GitHub →</a>
     <a class="btn btn-ghost" href="#install">Install</a>
