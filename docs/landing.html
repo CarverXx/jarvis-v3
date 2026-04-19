@@ -1,0 +1,1659 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>JARVIS v3 — GitHub 发布物 (Light)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fafaf7;            /* Claude warm off-white */
+    --paper: #ffffff;
+    --surface: #f5f4ef;
+    --surface-2: #ecebe4;
+    --border: #e5e3db;
+    --border-strong: #d0cdc2;
+    --ink: #1a1a19;
+    --ink-muted: #5c5b57;
+    --ink-dim: #8f8e88;
+    --ink-faint: #bbbab3;
+
+    --accent: #c96442;        /* Claude terracotta */
+    --accent-soft: #f3d7c9;
+    --cyan: #2a6db2;
+    --cyan-soft: #dce8f4;
+    --amber: #b67a0e;
+    --amber-soft: #f2e3c2;
+    --green: #3a7a3a;
+    --green-soft: #d7e6d2;
+    --purple: #6a4fbf;
+    --purple-soft: #e2daf4;
+    --red: #b93a2f;
+    --red-soft: #f4d6d2;
+
+    --grid: rgba(0,0,0,0.035);
+    --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    --sans: 'Inter', 'Noto Sans SC', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #efeee7; color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+  body { padding: 40px 24px 120px; }
+
+  /* Responsive scaler: each sheet sits in a wrapper that scales to fit viewport. */
+  .scaler {
+    width: 100%;
+    margin: 0 auto 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  .scaler-inner {
+    position: relative;
+    transform-origin: top left;
+    display: block;
+  }
+
+  .sheet {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03), 0 8px 24px rgba(0,0,0,0.04);
+  }
+  .sheet-label {
+    position: absolute; top: 8px; left: 24px;
+    background: var(--bg); color: var(--ink-muted);
+    font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px;
+    padding: 2px 10px; text-transform: uppercase;
+    border: 1px solid var(--border); border-radius: 2px;
+    z-index: 5;
+  }
+
+  .mono { font-family: var(--mono); }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 8px; border-radius: 12px;
+    font-family: var(--mono); font-size: 10px; font-weight: 500;
+    border: 1px solid var(--border-strong);
+    background: var(--paper);
+    color: var(--ink-muted);
+  }
+  .chip .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+  .chip.cyan { color: var(--cyan); border-color: var(--cyan); background: var(--cyan-soft); }
+  .chip.amber { color: var(--amber); border-color: var(--amber); background: var(--amber-soft); }
+  .chip.purple { color: var(--purple); border-color: var(--purple); background: var(--purple-soft); }
+  .chip.green { color: var(--green); border-color: var(--green); background: var(--green-soft); }
+  .chip.accent { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    width: 1600px; min-height: 580px;
+    background:
+      radial-gradient(900px 440px at 78% 40%, rgba(201,100,66,0.08), transparent 60%),
+      radial-gradient(800px 480px at 15% 110%, rgba(42,109,178,0.06), transparent 60%),
+      var(--bg);
+    position: relative;
+    padding: 56px 72px;
+  }
+  .hero-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 90% 80% at 50% 50%, #000 30%, transparent 100%);
+  }
+  .hero-row { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: stretch; }
+  .hero-left { display: flex; flex-direction: column; justify-content: space-between; gap: 28px; }
+  .hero-topline {
+    display: flex; align-items: center; gap: 12px;
+    font-family: var(--mono); font-size: 11px; color: var(--ink-muted); letter-spacing: 1px;
+  }
+  .hero-topline .path { color: var(--accent); font-weight: 600; }
+  .hero-topline .sep { color: var(--ink-faint); }
+  .hero-title {
+    font-family: var(--sans); font-weight: 800; font-size: 132px; line-height: 0.9; letter-spacing: -4px;
+    margin: 24px 0 0; color: var(--ink);
+  }
+  .hero-title .j { color: var(--accent); }
+  .hero-title .v3 {
+    font-size: 52px; vertical-align: top; color: var(--cyan); letter-spacing: 0;
+    margin-left: 14px; font-weight: 600;
+  }
+  .hero-sub {
+    font-family: var(--sans); font-weight: 500; font-size: 24px; color: var(--ink);
+    margin: 20px 0 0; letter-spacing: -0.3px; line-height: 1.35;
+  }
+  .hero-sub em { color: var(--accent); font-style: normal; }
+  .hero-sub i { color: var(--cyan); font-style: normal; }
+  .hero-sub-zh {
+    font-family: var(--sans); font-size: 16px; color: var(--ink-muted);
+    margin: 10px 0 0; max-width: 540px; line-height: 1.6;
+  }
+  .hero-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 20px; }
+
+  .hero-meta {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+    border-top: 1px solid var(--border);
+    padding-top: 18px;
+  }
+  .hero-meta .cell { padding-right: 16px; }
+  .hero-meta .k { font-family: var(--mono); font-size: 10px; color: var(--ink-dim); letter-spacing: 1.5px; text-transform: uppercase; }
+  .hero-meta .v { font-family: var(--mono); font-size: 17px; color: var(--ink); margin-top: 4px; font-weight: 600; }
+  .hero-meta .v small { color: var(--ink-muted); font-weight: 400; font-size: 11px; }
+
+  /* hero right — dual agent block diagram */
+  .hero-right {
+    position: relative; padding: 12px;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    display: flex; flex-direction: column;
+  }
+  .hr-label {
+    font-family: var(--mono); font-size: 10px; color: var(--ink-muted);
+    letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 8px 12px; border-bottom: 1px dashed var(--border);
+    display: flex; justify-content: space-between;
+  }
+  .hr-label .num { color: var(--accent); font-weight: 600; }
+  .hr-diagram { flex: 1; padding: 20px; }
+
+  /* ---------- common boxes ---------- */
+  .box {
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 14px 16px;
+    background: var(--paper);
+    font-family: var(--mono);
+    position: relative;
+  }
+  .box .tag { font-size: 9px; color: var(--ink-dim); letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; }
+  .box .title { font-size: 13px; color: var(--ink); font-weight: 600; margin-top: 4px; }
+  .box .sub { font-size: 11px; color: var(--ink-muted); margin-top: 4px; line-height: 1.5; }
+  .box .port { position: absolute; top: 12px; right: 14px; font-size: 10px; font-weight: 600; color: var(--cyan); }
+  .box.cyan { border-color: var(--cyan); background: var(--cyan-soft); }
+  .box.cyan .tag { color: var(--cyan); }
+  .box.amber { border-color: var(--amber); background: var(--amber-soft); }
+  .box.amber .tag, .box.amber .port { color: var(--amber); }
+  .box.green { border-color: var(--green); background: var(--green-soft); }
+  .box.green .tag, .box.green .port { color: var(--green); }
+  .box.purple { border-color: var(--purple); background: var(--purple-soft); }
+  .box.purple .tag, .box.purple .port { color: var(--purple); }
+  .box.accent { border-color: var(--accent); background: var(--accent-soft); }
+  .box.accent .tag, .box.accent .port { color: var(--accent); }
+
+  /* ---------- SECTIONS ---------- */
+  .section {
+    width: 1600px; padding: 64px 72px 80px;
+    background: var(--bg);
+  }
+  .section h2 {
+    font-family: var(--sans); font-size: 32px; font-weight: 700; margin: 0;
+    letter-spacing: -0.5px; color: var(--ink);
+  }
+  .section h2 .zh { color: var(--ink-muted); font-weight: 500; font-size: 19px; margin-left: 14px; }
+  .section-sub { color: var(--ink-muted); font-family: var(--mono); font-size: 12px; margin: 8px 0 32px; }
+
+  /* ---------- Architecture ---------- */
+  .host-card {
+    border: 1px solid var(--border); border-radius: 10px;
+    background: var(--paper); padding: 24px;
+  }
+  .host-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 22px;
+  }
+  .host-head .name { font-family: var(--mono); font-size: 17px; color: var(--ink); font-weight: 600; }
+  .host-head .name .slash { color: var(--ink-faint); }
+  .host-head .meta { font-family: var(--mono); font-size: 11px; color: var(--ink-muted); line-height: 1.7; text-align: right; }
+
+  .layer {
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 18px 20px; background: var(--surface);
+    margin-bottom: 16px;
+  }
+  .layer-hd { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+  .layer-hd .t { font-family: var(--mono); font-size: 11px; color: var(--ink); letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; }
+  .layer-hd .t .num { color: var(--accent); margin-right: 8px; }
+  .layer-hd .desc { font-size: 12px; color: var(--ink-muted); font-family: var(--mono); }
+  .modules { display: grid; gap: 12px; }
+  .modules.m5 { grid-template-columns: repeat(5, 1fr); }
+  .modules.m4 { grid-template-columns: repeat(4, 1fr); }
+  .modules.m3 { grid-template-columns: repeat(3, 1fr); }
+  .modules.m2 { grid-template-columns: repeat(2, 1fr); }
+
+  .flow-arrow {
+    display: flex; justify-content: center; gap: 120px;
+    font-family: var(--mono); font-size: 10px; color: var(--ink-dim);
+    padding: 6px 0 2px;
+  }
+  .flow-arrow span { position: relative; padding-top: 14px; letter-spacing: 1.5px; }
+  .flow-arrow span::before {
+    content: ''; position: absolute; top: 0; left: 50%; width: 1px; height: 10px;
+    background: var(--border-strong); transform: translateX(-50%);
+  }
+  .flow-arrow span::after {
+    content: ''; position: absolute; top: 8px; left: 50%;
+    border-left: 3px solid transparent; border-right: 3px solid transparent;
+    border-top: 4px solid var(--border-strong); transform: translateX(-50%);
+  }
+
+  /* VRAM */
+  .vram {
+    margin-top: 18px; border: 1px solid var(--border); border-radius: 8px;
+    padding: 18px 20px; background: var(--surface);
+  }
+  .vram-hd { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+  .vram-hd .t { font-family: var(--mono); font-size: 11px; color: var(--ink); letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; }
+  .vram-hd .total { font-family: var(--mono); font-size: 11px; color: var(--ink-muted); }
+  .vram-bar { display: flex; height: 32px; border-radius: 4px; overflow: hidden; border: 1px solid var(--border); }
+  .vram-seg { display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 10px; font-weight: 600; }
+  .vram-legend { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-top: 12px; font-family: var(--mono); font-size: 10px; }
+  .vram-legend .lg { display: flex; gap: 8px; align-items: flex-start; }
+  .vram-legend .sw { width: 10px; height: 10px; border-radius: 2px; margin-top: 3px; flex-shrink: 0; border: 1px solid transparent; }
+  .vram-legend .lbl { color: var(--ink); font-size: 11px; font-weight: 500; }
+  .vram-legend .sub { color: var(--ink-muted); font-size: 10px; margin-top: 2px; }
+
+  /* panel for flows */
+  .panel {
+    border: 1px solid var(--border); border-radius: 10px; background: var(--paper);
+    padding: 22px;
+  }
+  .panel-h {
+    font-family: var(--mono); font-size: 11px; color: var(--ink-muted);
+    letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600;
+    padding-bottom: 14px; margin-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .panel-h .num { color: var(--accent); }
+  .panel-h .right { color: var(--ink-dim); font-weight: 400; }
+
+  /* stepper */
+  .step { display: grid; grid-template-columns: 40px 1fr; gap: 14px; position: relative; padding-bottom: 20px; }
+  .step:last-child { padding-bottom: 0; }
+  .step::before {
+    content: ''; position: absolute; left: 19px; top: 36px; bottom: -4px; width: 1px;
+    background: var(--border);
+  }
+  .step:last-child::before { display: none; }
+  .step .idx {
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--paper); border: 1px solid var(--border-strong);
+    font-family: var(--mono); font-size: 12px; color: var(--cyan); font-weight: 700;
+    position: relative; z-index: 2;
+  }
+  .step .idx.amber { color: var(--amber); border-color: var(--amber); background: var(--amber-soft); }
+  .step .idx.green { color: var(--green); border-color: var(--green); background: var(--green-soft); }
+  .step .idx.purple { color: var(--purple); border-color: var(--purple); background: var(--purple-soft); }
+  .step .idx.accent { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+  .step .body { padding-top: 6px; }
+  .step .body .t { font-family: var(--mono); font-size: 13px; color: var(--ink); font-weight: 600; }
+  .step .body .t .badge { margin-left: 10px; font-size: 10px; padding: 2px 6px; border-radius: 3px; background: var(--surface); border: 1px solid var(--border); color: var(--ink-muted); letter-spacing: 1px; font-weight: 500; }
+  .step .body .d { font-size: 12px; color: var(--ink-muted); line-height: 1.6; margin-top: 4px; font-family: var(--sans); }
+  .step .body .meta { font-family: var(--mono); font-size: 10px; color: var(--ink-dim); margin-top: 6px; letter-spacing: 0.3px; }
+  .step .body .meta code { color: var(--accent); background: var(--accent-soft); padding: 1px 5px; border-radius: 3px; }
+
+  .split {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px;
+    padding: 12px; background: var(--surface); border: 1px dashed var(--border-strong); border-radius: 6px;
+  }
+  .split .branch { font-family: var(--mono); font-size: 11px; }
+  .split .branch .h { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; }
+  .split .branch.a .h { color: var(--cyan); }
+  .split .branch.b .h { color: var(--amber); }
+  .split .branch p { margin: 4px 0 2px; color: var(--ink); line-height: 1.5; }
+  .split .branch small { color: var(--ink-muted); }
+
+  /* table-like KV list */
+  .kv-list { display: flex; flex-direction: column; gap: 8px; }
+  .kv-row {
+    display: grid; grid-template-columns: 70px 1fr auto; gap: 14px; align-items: center;
+    padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--surface); font-family: var(--mono);
+  }
+  .kv-row .port { font-size: 13px; font-weight: 700; color: var(--cyan); }
+  .kv-row.amber .port { color: var(--amber); }
+  .kv-row.green .port { color: var(--green); }
+  .kv-row.purple .port { color: var(--purple); }
+  .kv-row.accent .port { color: var(--accent); }
+  .kv-row .svc-name { font-size: 13px; color: var(--ink); font-weight: 600; }
+  .kv-row .svc-desc { font-size: 10px; color: var(--ink-muted); margin-top: 2px; }
+  .kv-row .svc-ram { font-size: 10px; color: var(--ink-muted); text-align: right; }
+  .kv-row .svc-ram b { color: var(--ink); font-weight: 600; display: block; font-size: 12px; }
+
+  /* decision tree card */
+  .decide-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;
+  }
+  .decide-col {
+    border: 1px solid var(--border); border-radius: 8px; padding: 16px;
+    background: var(--surface);
+  }
+  .decide-col.a { border-color: var(--cyan); background: var(--cyan-soft); }
+  .decide-col.b { border-color: var(--amber); background: var(--amber-soft); }
+  .decide-col h4 {
+    margin: 0 0 10px; font-family: var(--mono); font-size: 11px; letter-spacing: 1.5px;
+    text-transform: uppercase; font-weight: 700;
+  }
+  .decide-col.a h4 { color: var(--cyan); }
+  .decide-col.b h4 { color: var(--amber); }
+  .decide-col ul { margin: 0; padding: 0 0 0 16px; font-size: 12px; color: var(--ink); line-height: 1.7; }
+  .decide-col ul li { margin-bottom: 2px; }
+  .decide-col .example {
+    margin-top: 12px; padding: 10px 12px; border-radius: 4px; background: var(--paper);
+    border: 1px dashed var(--border-strong);
+    font-family: var(--mono); font-size: 11px; color: var(--ink-muted); line-height: 1.6;
+  }
+  .decide-col .example b { color: var(--ink); font-weight: 600; }
+
+  /* grid of small feature cards */
+  .feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .feat {
+    border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px;
+    background: var(--paper);
+  }
+  .feat .n { font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: 1.5px; font-weight: 700; }
+  .feat h4 { margin: 6px 0 6px; font-size: 15px; font-weight: 600; color: var(--ink); letter-spacing: -0.2px; }
+  .feat p { margin: 0; font-size: 12px; color: var(--ink-muted); line-height: 1.55; }
+
+  /* risk/design tenets table */
+  .tbl {
+    width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 11px;
+  }
+  .tbl th {
+    text-align: left; padding: 10px 12px; font-size: 10px; color: var(--ink-dim);
+    letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600;
+    border-bottom: 1px solid var(--border);
+  }
+  .tbl td {
+    padding: 12px; font-size: 11px; color: var(--ink); vertical-align: top;
+    border-bottom: 1px solid var(--border);
+    line-height: 1.55;
+  }
+  .tbl td b { font-weight: 600; }
+  .tbl tr:last-child td { border-bottom: none; }
+  .tbl .p-low { color: var(--green); font-weight: 600; }
+  .tbl .p-med { color: var(--amber); font-weight: 600; }
+  .tbl .p-high { color: var(--red); font-weight: 600; }
+  .tbl .pill {
+    display: inline-block; padding: 2px 8px; border-radius: 10px;
+    font-size: 10px; font-weight: 600; letter-spacing: 0.5px;
+  }
+  .tbl .pill.low { background: var(--green-soft); color: var(--green); }
+  .tbl .pill.med { background: var(--amber-soft); color: var(--amber); }
+  .tbl .pill.high { background: var(--red-soft); color: var(--red); }
+
+  /* event timeline */
+  .timeline {
+    display: grid;
+    grid-template-columns: 80px 1fr; gap: 0;
+    font-family: var(--mono);
+  }
+  .tl-time {
+    font-size: 10px; color: var(--ink-dim); padding: 4px 12px 4px 0;
+    text-align: right; border-right: 1px solid var(--border);
+    position: relative;
+  }
+  .tl-time::after {
+    content: ''; position: absolute; right: -4px; top: 8px;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--paper); border: 1.5px solid var(--ink-muted);
+  }
+  .tl-time.e::after { border-color: var(--accent); }
+  .tl-body {
+    padding: 2px 0 14px 16px;
+    position: relative;
+  }
+  .tl-body .e-type {
+    font-size: 10px; color: var(--ink); font-weight: 700; letter-spacing: 0.5px;
+    display: inline-block; padding: 2px 6px; border-radius: 3px;
+    background: var(--surface); border: 1px solid var(--border);
+    margin-bottom: 4px;
+  }
+  .tl-body .e-type.sub { color: var(--cyan); background: var(--cyan-soft); border-color: var(--cyan); }
+  .tl-body .e-type.main { color: var(--amber); background: var(--amber-soft); border-color: var(--amber); }
+  .tl-body .e-type.tts { color: var(--purple); background: var(--purple-soft); border-color: var(--purple); }
+  .tl-body .e-type.asr { color: var(--green); background: var(--green-soft); border-color: var(--green); }
+  .tl-body .e-type.acc { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .tl-body .e-desc { font-size: 11px; color: var(--ink-muted); margin-top: 2px; }
+  .tl-body .e-payload { font-size: 10px; color: var(--ink-dim); margin-top: 2px; font-style: italic; }
+
+  /* ---------- POSTER ---------- */
+  .poster {
+    width: 1240px; height: 1754px;
+    background:
+      radial-gradient(700px 500px at 90% 6%, rgba(201,100,66,0.08), transparent 60%),
+      radial-gradient(500px 400px at 0% 100%, rgba(42,109,178,0.06), transparent 60%),
+      var(--bg);
+    padding: 64px 72px;
+    position: relative;
+    overflow: hidden;
+  }
+  .poster-grid-bg {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse 100% 80% at 50% 30%, #000 30%, transparent 100%);
+  }
+  .poster-corner { position: absolute; top: 24px; right: 24px; bottom: 24px; left: 24px; border: 1px solid var(--border); pointer-events: none; }
+  .poster-corner::before, .poster-corner::after,
+  .poster-corner > span::before, .poster-corner > span::after {
+    content: ''; position: absolute; width: 14px; height: 14px;
+    border: 2px solid var(--accent);
+  }
+  .poster-corner::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+  .poster-corner::after { top: -1px; right: -1px; border-left: none; border-bottom: none; }
+  .poster-corner > span::before { bottom: -1px; left: -1px; border-right: none; border-top: none; }
+  .poster-corner > span::after { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+  .poster-inner { position: relative; z-index: 2; }
+  .poster-top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    font-family: var(--mono); font-size: 11px; color: var(--ink-muted); letter-spacing: 1.5px;
+  }
+  .poster-top .kv { display: flex; gap: 20px; }
+  .poster-top .kv div b { color: var(--ink); font-weight: 600; }
+  .poster-title {
+    margin-top: 28px;
+    font-family: var(--sans); font-weight: 800; font-size: 170px; line-height: 0.88;
+    letter-spacing: -6px; color: var(--ink);
+  }
+  .poster-title .j { color: var(--accent); }
+  .poster-title .v3 { color: var(--cyan); font-size: 70px; vertical-align: top; letter-spacing: 0; margin-left: 18px; font-weight: 600; }
+  .poster-tag {
+    font-family: var(--sans); font-weight: 600; font-size: 30px; letter-spacing: -0.5px;
+    margin-top: 18px; max-width: 920px; line-height: 1.2; color: var(--ink);
+  }
+  .poster-tag em { color: var(--accent); font-style: normal; }
+  .poster-tag i { color: var(--cyan); font-style: normal; }
+  .poster-tag-zh {
+    font-family: var(--sans); font-size: 16px; color: var(--ink-muted);
+    max-width: 780px; margin-top: 12px; line-height: 1.6;
+  }
+  .stack-ticker { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 18px; }
+  .stack-ticker .t {
+    font-family: var(--mono); font-size: 10px;
+    padding: 4px 10px; border: 1px solid var(--border-strong); border-radius: 3px;
+    background: var(--paper); color: var(--ink-muted);
+  }
+  .stack-ticker .t b { color: var(--ink); font-weight: 600; }
+  .poster-meta {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 0; margin-top: 28px;
+  }
+  .poster-meta .cell { padding: 0 18px; border-right: 1px solid var(--border); }
+  .poster-meta .cell:first-child { padding-left: 0; }
+  .poster-meta .cell:last-child { border-right: none; }
+  .poster-meta .k { font-family: var(--mono); font-size: 10px; color: var(--ink-dim); letter-spacing: 1.5px; text-transform: uppercase; }
+  .poster-meta .v { font-family: var(--mono); font-size: 22px; color: var(--ink); font-weight: 700; margin-top: 4px; }
+  .poster-meta .v .unit { color: var(--ink-muted); font-size: 12px; font-weight: 400; margin-left: 4px; }
+
+  .centerpiece {
+    margin-top: 32px; position: relative; height: 420px;
+    border: 1px solid var(--border); border-radius: 12px; background: var(--paper); overflow: hidden;
+  }
+  .cp-label {
+    position: absolute; top: 14px; left: 20px;
+    font-family: var(--mono); font-size: 10px; color: var(--ink-muted); letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600;
+  }
+  .cp-label .num { color: var(--accent); }
+  .cp-brains { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 140px 1fr; gap: 0; padding: 54px 36px 32px; }
+  .brain {
+    border: 1px solid var(--border-strong); border-radius: 10px;
+    padding: 20px 22px; display: flex; flex-direction: column; position: relative;
+  }
+  .brain.sub { border-color: var(--cyan); background: linear-gradient(180deg, var(--cyan-soft) 0%, var(--paper) 60%); }
+  .brain.main { border-color: var(--amber); background: linear-gradient(180deg, var(--amber-soft) 0%, var(--paper) 60%); }
+  .brain .role { font-family: var(--mono); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; }
+  .brain.sub .role { color: var(--cyan); }
+  .brain.main .role { color: var(--amber); }
+  .brain .name { font-family: var(--sans); font-size: 26px; font-weight: 700; margin-top: 4px; letter-spacing: -0.5px; color: var(--ink); }
+  .brain .name-zh { font-family: var(--sans); font-size: 13px; color: var(--ink-muted); margin-top: 2px; }
+  .brain .model { font-family: var(--mono); font-size: 11px; color: var(--ink-muted); margin-top: 12px; padding: 8px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; }
+  .brain ul { list-style: none; padding: 0; margin: 12px 0 0; }
+  .brain ul li { font-family: var(--sans); font-size: 12px; color: var(--ink); margin-bottom: 5px; padding-left: 14px; position: relative; line-height: 1.5; }
+  .brain ul li::before { content: '▸'; position: absolute; left: 0; top: 0; color: var(--ink-faint); font-size: 10px; }
+  .brain .kpi { margin-top: auto; padding-top: 12px; display: flex; justify-content: space-between; border-top: 1px dashed var(--border-strong); }
+  .brain .kpi div { font-family: var(--mono); }
+  .brain .kpi .k { font-size: 9px; color: var(--ink-dim); letter-spacing: 1.5px; text-transform: uppercase; }
+  .brain .kpi .v { font-size: 15px; color: var(--ink); font-weight: 600; margin-top: 2px; }
+  .bridge { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
+  .bridge .arrow-top, .bridge .arrow-bot { font-family: var(--mono); font-size: 10px; color: var(--ink-muted); letter-spacing: 1px; text-align: center; }
+  .bridge .arrow-top b { color: var(--cyan); display: block; }
+  .bridge .arrow-bot b { color: var(--amber); display: block; }
+  .bridge .tool-icon {
+    width: 60px; height: 60px; border-radius: 50%;
+    border: 1.5px solid var(--border-strong); background: var(--paper);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 10px; color: var(--ink-muted); font-weight: 700; letter-spacing: 1px;
+  }
+  .bridge .line { width: 1px; flex: 1; background: linear-gradient(180deg, var(--cyan), var(--amber)); min-height: 32px; opacity: 0.5; }
+
+  .poster-bottom { display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; margin-top: 28px; }
+  .svc-card, .states-mini {
+    border: 1px solid var(--border); border-radius: 10px; padding: 22px; background: var(--paper);
+  }
+  .svc-card h3, .states-mini h3 {
+    margin: 0 0 14px; font-family: var(--mono); font-size: 11px; letter-spacing: 1.5px;
+    color: var(--ink-muted); text-transform: uppercase; font-weight: 600;
+  }
+  .svc-card h3 .num, .states-mini h3 .num { color: var(--accent); }
+  .state-chain { display: flex; flex-direction: column; gap: 8px; }
+  .sc-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--surface); font-family: var(--mono); font-size: 12px;
+  }
+  .sc-row .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .sc-row .name { color: var(--ink); font-weight: 600; flex-shrink: 0; width: 150px; }
+  .sc-row .desc { color: var(--ink-muted); font-size: 11px; }
+
+  .footer-strip {
+    margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--mono); font-size: 11px; color: var(--ink-muted);
+  }
+  .footer-strip .tech { display: flex; gap: 18px; flex-wrap: wrap; }
+  .footer-strip .tech b { color: var(--ink); font-weight: 600; }
+  .footer-strip .repo { color: var(--accent); font-weight: 600; }
+
+  /* grid 2 col */
+  .grid-2 { display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; }
+  .grid-1-2 { display: grid; grid-template-columns: 1fr 1.6fr; gap: 24px; }
+
+</style>
+</head>
+<body>
+
+<!-- =========================================================
+     1 · README HERO (LIGHT)
+     ========================================================= -->
+<div class="scaler"><div class="scaler-inner" data-sheet-w="1600"><div class="sheet" style="width: 1600px;">
+  <span class="sheet-label">01 · README HERO · 1600×auto</span>
+  <div class="hero" data-screen-label="01 Hero">
+    <div class="hero-grid"></div>
+    <div class="hero-row">
+      <div class="hero-left">
+        <div>
+          <div class="hero-topline">
+            <span class="path">peter/jarvis-v3</span>
+            <span class="sep">·</span>
+            <span>main</span>
+            <span class="sep">·</span>
+            <span>commit 4e9f2a1</span>
+            <span class="sep">·</span>
+            <span>2026.04.19</span>
+          </div>
+          <h1 class="hero-title"><span class="j">J</span>arvis<span class="v3">v3</span></h1>
+          <p class="hero-sub">Always-on wake-word voice assistant with a <em>subconscious</em> / <i>main-cortex</i> dual brain.</p>
+          <p class="hero-sub-zh">常驻唤醒词 · 半双工语音助手 · 潜意识直答 + 主意识工具委托的双智能体架构，部署在家庭音箱级本地 GPU 主机上。</p>
+          <div class="hero-badges">
+            <span class="chip"><span class="dot"></span>status · running</span>
+            <span class="chip">license · MIT</span>
+            <span class="chip">python · 3.12</span>
+            <span class="chip amber">RTX PRO 6000 · 96GB</span>
+            <span class="chip green">uptime · 7×24</span>
+            <span class="chip cyan">zh-CN / en</span>
+          </div>
+        </div>
+        <div class="hero-meta">
+          <div class="cell"><div class="k">subconscious</div><div class="v">Qwen3.6-35B <small>FP8</small></div></div>
+          <div class="cell"><div class="k">main cortex</div><div class="v">Hermes <small>agent CLI</small></div></div>
+          <div class="cell"><div class="k">TTFB</div><div class="v">&lt; 1 s <small>subconscious</small></div></div>
+          <div class="cell"><div class="k">VRAM</div><div class="v">74 / 96 <small>GB</small></div></div>
+        </div>
+      </div>
+
+      <!-- hero right — compact block architecture -->
+      <div class="hero-right">
+        <div class="hr-label"><span><span class="num">FIG.01</span> · DUAL-AGENT TOPOLOGY</span><span>single host</span></div>
+        <div class="hr-diagram">
+          <svg viewBox="0 0 640 500" style="width: 100%; height: 460px; display: block;" font-family="JetBrains Mono" font-size="11">
+            <defs>
+              <marker id="arh" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#8f8e88"/>
+              </marker>
+              <marker id="arh-c" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#2a6db2"/>
+              </marker>
+              <marker id="arh-a" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#b67a0e"/>
+              </marker>
+              <marker id="arh-ac" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#c96442"/>
+              </marker>
+            </defs>
+
+            <!-- user / mic input -->
+            <g>
+              <rect x="30" y="220" width="110" height="60" rx="8" fill="#ffffff" stroke="#d0cdc2"/>
+              <text x="85" y="243" text-anchor="middle" fill="#8f8e88" font-size="9" letter-spacing="1.5">HUMAN · 用户</text>
+              <text x="85" y="262" text-anchor="middle" fill="#1a1a19" font-size="13" font-weight="700">🎙 Poly Sync</text>
+            </g>
+            <path d="M 140 250 L 200 250" stroke="#8f8e88" stroke-width="1.3" marker-end="url(#arh)"/>
+
+            <!-- satellite (state machine) -->
+            <g>
+              <rect x="200" y="190" width="150" height="120" rx="10" fill="#fffaf7" stroke="#c96442"/>
+              <text x="275" y="210" text-anchor="middle" fill="#c96442" font-size="9" font-weight="700" letter-spacing="1.5">STATE MACHINE</text>
+              <text x="275" y="230" text-anchor="middle" fill="#1a1a19" font-size="14" font-weight="700">satellite.py</text>
+              <text x="275" y="250" text-anchor="middle" fill="#5c5b57" font-size="10">5 states · asyncio</text>
+              <rect x="215" y="262" width="120" height="18" rx="3" fill="#f3d7c9" stroke="#c96442" stroke-width="0.8"/>
+              <text x="275" y="275" text-anchor="middle" fill="#c96442" font-size="9" font-weight="700">WAKE · VAD · ROUTER</text>
+              <text x="275" y="296" text-anchor="middle" fill="#8f8e88" font-size="9">jarvis-v3.service</text>
+            </g>
+
+            <!-- ASR -->
+            <path d="M 275 190 L 275 140 L 420 140" stroke="#3a7a3a" stroke-width="1.3" marker-end="url(#arh)"/>
+            <text x="345" y="132" text-anchor="middle" fill="#3a7a3a" font-size="9">audio</text>
+            <g>
+              <rect x="420" y="110" width="190" height="60" rx="8" fill="#d7e6d2" stroke="#3a7a3a"/>
+              <text x="515" y="130" text-anchor="middle" fill="#3a7a3a" font-size="9" font-weight="700" letter-spacing="1.5">ASR · :8002</text>
+              <text x="515" y="148" text-anchor="middle" fill="#1a1a19" font-size="13" font-weight="700">Qwen3-ASR-1.7B</text>
+              <text x="515" y="162" text-anchor="middle" fill="#5c5b57" font-size="10">vLLM · 6 GB</text>
+            </g>
+            <path d="M 420 140 L 365 140 L 365 195" stroke="#3a7a3a" stroke-width="1.3" marker-end="url(#arh)" fill="none" stroke-dasharray="3 3"/>
+            <text x="390" y="160" fill="#3a7a3a" font-size="9">text</text>
+
+            <!-- Subconscious -->
+            <path d="M 350 230 L 420 230" stroke="#2a6db2" stroke-width="1.5" marker-end="url(#arh-c)"/>
+            <g>
+              <rect x="420" y="200" width="190" height="70" rx="8" fill="#dce8f4" stroke="#2a6db2"/>
+              <text x="515" y="220" text-anchor="middle" fill="#2a6db2" font-size="9" font-weight="700" letter-spacing="1.5">SUBCONSCIOUS · 潜意识</text>
+              <text x="515" y="240" text-anchor="middle" fill="#1a1a19" font-size="13" font-weight="700">SGLang · Qwen3.6-35B</text>
+              <text x="515" y="258" text-anchor="middle" fill="#5c5b57" font-size="10">:8000 · tools · stream · 60 GB</text>
+            </g>
+
+            <!-- Main Hermes -->
+            <path d="M 515 270 L 515 310" stroke="#b67a0e" stroke-width="1.5" marker-end="url(#arh-a)" stroke-dasharray="4 3"/>
+            <text x="526" y="291" fill="#b67a0e" font-size="9" font-weight="600">invoke_hermes</text>
+            <g>
+              <rect x="420" y="310" width="190" height="70" rx="8" fill="#f2e3c2" stroke="#b67a0e"/>
+              <text x="515" y="330" text-anchor="middle" fill="#b67a0e" font-size="9" font-weight="700" letter-spacing="1.5">MAIN CORTEX · 主意识</text>
+              <text x="515" y="350" text-anchor="middle" fill="#1a1a19" font-size="13" font-weight="700">Hermes CLI · agent loop</text>
+              <text x="515" y="368" text-anchor="middle" fill="#5c5b57" font-size="10">:8004 · file/shell/web/NAS</text>
+            </g>
+            <path d="M 420 345 C 350 345 350 290 420 265" stroke="#b67a0e" stroke-width="1.3" marker-end="url(#arh-a)" fill="none" stroke-dasharray="3 3"/>
+            <text x="355" y="310" fill="#b67a0e" font-size="9">summary</text>
+
+            <!-- TTS -->
+            <path d="M 350 290 L 365 290 L 365 430 L 420 430" stroke="#6a4fbf" stroke-width="1.3" marker-end="url(#arh)"/>
+            <text x="380" y="420" fill="#6a4fbf" font-size="9">reply text</text>
+            <g>
+              <rect x="420" y="400" width="190" height="60" rx="8" fill="#e2daf4" stroke="#6a4fbf"/>
+              <text x="515" y="420" text-anchor="middle" fill="#6a4fbf" font-size="9" font-weight="700" letter-spacing="1.5">TTS · :8003</text>
+              <text x="515" y="438" text-anchor="middle" fill="#1a1a19" font-size="13" font-weight="700">VoxCPM2 · JARVIS ref</text>
+              <text x="515" y="452" text-anchor="middle" fill="#5c5b57" font-size="10">48kHz stream · 8 GB</text>
+            </g>
+            <!-- tts back to speaker (mic mute) -->
+            <path d="M 420 430 L 140 430 L 140 280" stroke="#6a4fbf" stroke-width="1.3" marker-end="url(#arh)" fill="none" stroke-dasharray="3 3"/>
+            <text x="160" y="422" fill="#6a4fbf" font-size="9">audio · mic_muted=true</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></div></div>
+
+<!-- =========================================================
+     2 · SYSTEM ARCHITECTURE
+     ========================================================= -->
+<div class="scaler"><div class="scaler-inner" data-sheet-w="1600"><div class="sheet" style="width: 1600px;">
+  <span class="sheet-label">02 · SYSTEM ARCHITECTURE · 系统架构</span>
+  <div class="section">
+    <h2>System Architecture<span class="zh">系统架构总览 · single-host deployment</span></h2>
+    <div class="section-sub">// totodile host · Ubuntu 24.04 · RTX PRO 6000 96GB · 192.168.100.233 · 7 systemd units</div>
+
+    <div class="host-card">
+      <div class="host-head">
+        <div class="name">totodile<span class="slash"> / </span>host</div>
+        <div class="meta">
+          Ubuntu 24.04 · kernel 6.8<br/>
+          RTX PRO 6000 · 96 GB VRAM<br/>
+          Poly Sync 10 · PipeWire device=11 · 16 kHz
+        </div>
+      </div>
+
+      <div class="layer">
+        <div class="layer-hd">
+          <div class="t"><span class="num">01</span>CAPTURE · WAKE · VAD</div>
+          <div class="desc">jarvis-v3.service · Python asyncio daemon</div>
+        </div>
+        <div class="modules m5">
+          <div class="box">
+            <div class="tag">HARDWARE I/O</div>
+            <div class="title">MicReader</div>
+            <div class="sub">sounddevice InputStream · match "Poly Sync" by name · 16 kHz mono</div>
+          </div>
+          <div class="box cyan">
+            <div class="tag">ALWAYS-ON</div>
+            <div class="title">openWakeWord</div>
+            <div class="sub">hey_jarvis_v0.1.tflite · score ≥ 0.7 gate · CPU</div>
+          </div>
+          <div class="box cyan">
+            <div class="tag">GATE</div>
+            <div class="title">Silero VAD</div>
+            <div class="sub">speech start + 0.5 s trailing silence → EOS</div>
+          </div>
+          <div class="box accent">
+            <div class="tag">ORCHESTRATION</div>
+            <div class="title">satellite.py</div>
+            <div class="sub">5-state async loop · forked from Wyoming Satellite</div>
+          </div>
+          <div class="box purple">
+            <div class="tag">HALF-DUPLEX</div>
+            <div class="title">AudioPlayer</div>
+            <div class="sub">blocking output + software mic_muted · +200 ms tail buffer</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-arrow"><span>HTTP · :8002</span><span>HTTP · :8000 · :8004</span><span>HTTP · :8003</span></div>
+
+      <div class="layer">
+        <div class="layer-hd">
+          <div class="t"><span class="num">02</span>INFERENCE SERVICES · FastAPI · systemd</div>
+          <div class="desc">4 independent processes · lazy-load · asyncio.Lock singleton models</div>
+        </div>
+        <div class="modules m4">
+          <div class="box green">
+            <div class="port">:8002</div>
+            <div class="tag">ASR SHIM</div>
+            <div class="title">qwen3-asr-shim</div>
+            <div class="sub">multipart → /v1/audio/transcriptions · proper-noun regex post-fix</div>
+          </div>
+          <div class="box cyan">
+            <div class="port">:8000</div>
+            <div class="tag">SUBCONSCIOUS · 潜意识</div>
+            <div class="title">SGLang · Qwen3.6-35B-A3B-FP8</div>
+            <div class="sub">native tool calling · streaming · 6-turn sliding history · prefix cache</div>
+          </div>
+          <div class="box amber">
+            <div class="port">:8004</div>
+            <div class="tag">MAIN CORTEX · 主意识</div>
+            <div class="title">hermes-shim</div>
+            <div class="sub">OpenAI-compat · hermes subprocess · sessions · 120 s timeout</div>
+          </div>
+          <div class="box purple">
+            <div class="port">:8003</div>
+            <div class="tag">TTS</div>
+            <div class="title">voxcpm2-tts</div>
+            <div class="sub">VoxCPM 2B · JARVIS voice ref · streaming 48 kHz PCM · -3 dBFS normalize</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-arrow"><span>Python / CUDA</span><span>vLLM · SGLang</span><span>subprocess</span></div>
+
+      <div class="layer">
+        <div class="layer-hd">
+          <div class="t"><span class="num">03</span>MODEL RUNTIMES · GPU tenants</div>
+          <div class="desc">single RTX PRO 6000 · cooperative VRAM partitioning</div>
+        </div>
+        <div class="modules m3">
+          <div class="box green">
+            <div class="port">:8001</div>
+            <div class="tag">vLLM</div>
+            <div class="title">Qwen3-ASR-1.7B</div>
+            <div class="sub">~6 GB VRAM · util 0.15 · multilingual</div>
+          </div>
+          <div class="box cyan">
+            <div class="port">:8000</div>
+            <div class="tag">SGLang</div>
+            <div class="title">Qwen3.6-35B-A3B-FP8</div>
+            <div class="sub">~60 GB VRAM · role: subconscious + Hermes backend</div>
+          </div>
+          <div class="box purple">
+            <div class="port">local</div>
+            <div class="tag">python</div>
+            <div class="title">VoxCPM2 2B</div>
+            <div class="sub">~8 GB VRAM · 48 kHz mono PCM · reference-voice cloning</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="vram">
+        <div class="vram-hd">
+          <div class="t">VRAM BUDGET · 96 GB total</div>
+          <div class="total">74 GB used · 22 GB headroom</div>
+        </div>
+        <div class="vram-bar">
+          <div class="vram-seg" style="width: 62.5%; background: var(--cyan-soft); color: var(--cyan);">Qwen3.6-35B · 60 GB</div>
+          <div class="vram-seg" style="width: 8.3%; background: var(--purple-soft); color: var(--purple);">VoxCPM2 · 8 GB</div>
+          <div class="vram-seg" style="width: 6.25%; background: var(--green-soft); color: var(--green);">ASR · 6 GB</div>
+          <div class="vram-seg" style="width: 22.9%; background: var(--surface); color: var(--ink-muted);">headroom · 22 GB</div>
+        </div>
+        <div class="vram-legend">
+          <div class="lg"><div class="sw" style="background: var(--cyan-soft); border-color: var(--cyan);"></div><div><div class="lbl">Qwen3.6-35B-A3B-FP8</div><div class="sub">subconscious · Hermes backend</div></div></div>
+          <div class="lg"><div class="sw" style="background: var(--purple-soft); border-color: var(--purple);"></div><div><div class="lbl">VoxCPM2 2B</div><div class="sub">TTS · JARVIS voice ref</div></div></div>
+          <div class="lg"><div class="sw" style="background: var(--green-soft); border-color: var(--green);"></div><div><div class="lbl">Qwen3-ASR-1.7B</div><div class="sub">multilingual ASR</div></div></div>
+          <div class="lg"><div class="sw" style="background: var(--surface); border-color: var(--border-strong);"></div><div><div class="lbl">headroom</div><div class="sub">buffer / future</div></div></div>
+          <div class="lg"><div class="sw" style="background: transparent; border: 1px dashed var(--border-strong);"></div><div><div class="lbl">wake + VAD</div><div class="sub">CPU only · no VRAM</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></div></div>
+
+<!-- =========================================================
+     3 · STATE MACHINE + TURN PIPELINE
+     ========================================================= -->
+<div class="scaler"><div class="scaler-inner" data-sheet-w="1600"><div class="sheet" style="width: 1600px;">
+  <span class="sheet-label">03 · STATE MACHINE · 状态机</span>
+  <div class="section">
+    <h2>State Machine &amp; Turn Pipeline<span class="zh">状态机 · 单轮对话数据流</span></h2>
+    <div class="section-sub">// half-duplex loop · wake → listen → asr → dual-agent decide → tts → follow-up (15 s)</div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-h"><span><span class="num">A</span> · STATE MACHINE · 5 states + ERROR</span><span class="right">asyncio</span></div>
+
+        <svg viewBox="0 0 680 720" style="width: 100%; height: 720px; display: block;" font-family="JetBrains Mono">
+          <defs>
+            <marker id="arL" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#8f8e88"/>
+            </marker>
+            <marker id="arL-c" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#2a6db2"/>
+            </marker>
+            <marker id="arL-a" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#b67a0e"/>
+            </marker>
+            <marker id="arL-r" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#b93a2f"/>
+            </marker>
+          </defs>
+
+          <!-- IDLE -->
+          <g>
+            <rect x="260" y="20" width="160" height="64" rx="10" fill="#d7e6d2" stroke="#3a7a3a"/>
+            <text x="270" y="40" fill="#3a7a3a" font-size="9" font-weight="700" letter-spacing="1.5">● STATE · IDLE</text>
+            <text x="270" y="58" fill="#1a1a19" font-size="13" font-weight="700">IDLE</text>
+            <text x="270" y="72" fill="#5c5b57" font-size="10">monitor wake word</text>
+          </g>
+
+          <path d="M 340 84 L 340 130" stroke="#2a6db2" stroke-width="1.5" marker-end="url(#arL-c)"/>
+          <text x="348" y="104" fill="#2a6db2" font-size="10" font-weight="600">score ≥ 0.7 + VAD</text>
+          <text x="348" y="118" fill="#5c5b57" font-size="9">→ play "在" (0.2s)</text>
+
+          <g>
+            <rect x="260" y="140" width="160" height="64" rx="10" fill="#dce8f4" stroke="#2a6db2"/>
+            <text x="270" y="160" fill="#2a6db2" font-size="9" font-weight="700" letter-spacing="1.5">● STATE · LISTEN</text>
+            <text x="270" y="178" fill="#1a1a19" font-size="13" font-weight="700">LISTENING</text>
+            <text x="270" y="192" fill="#5c5b57" font-size="10">record command · VAD · 10s hard</text>
+          </g>
+
+          <path d="M 340 204 L 340 250" stroke="#2a6db2" stroke-width="1.5" marker-end="url(#arL-c)"/>
+          <text x="348" y="228" fill="#2a6db2" font-size="10" font-weight="600">0.5s silence → EOS</text>
+
+          <g>
+            <rect x="260" y="260" width="160" height="64" rx="10" fill="#f3d7c9" stroke="#c96442"/>
+            <text x="270" y="280" fill="#c96442" font-size="9" font-weight="700" letter-spacing="1.5">● STATE · PROCESS</text>
+            <text x="270" y="298" fill="#1a1a19" font-size="13" font-weight="700">PROCESSING</text>
+            <text x="270" y="312" fill="#5c5b57" font-size="10">ASR → subconscious.chat()</text>
+          </g>
+
+          <path d="M 260 292 C 160 292 120 360 120 400" stroke="#2a6db2" stroke-width="1.5" fill="none" marker-end="url(#arL-c)"/>
+          <text x="40" y="340" fill="#2a6db2" font-size="10" font-weight="600">direct reply</text>
+          <text x="40" y="354" fill="#5c5b57" font-size="9">(subconscious only)</text>
+
+          <path d="M 420 292 C 560 292 600 340 600 400" stroke="#b67a0e" stroke-width="1.5" fill="none" marker-end="url(#arL-a)"/>
+          <text x="500" y="340" fill="#b67a0e" font-size="10" font-weight="600">tool_call branch</text>
+          <text x="500" y="354" fill="#5c5b57" font-size="9">+ waiting beep loop</text>
+
+          <g>
+            <rect x="510" y="400" width="170" height="80" rx="10" fill="#f2e3c2" stroke="#b67a0e" stroke-dasharray="4 2"/>
+            <text x="520" y="420" fill="#b67a0e" font-size="9" font-weight="700" letter-spacing="1.5">● SUB-STATE</text>
+            <text x="520" y="438" fill="#1a1a19" font-size="13" font-weight="700">HERMES_RUN</text>
+            <text x="520" y="454" fill="#5c5b57" font-size="10">agentic task · tools</text>
+            <text x="520" y="470" fill="#5c5b57" font-size="10">timeout 120s · tick 2s</text>
+          </g>
+
+          <path d="M 510 440 C 430 440 420 420 340 420" stroke="#b67a0e" stroke-width="1.5" fill="none" marker-end="url(#arL-a)"/>
+          <text x="360" y="410" fill="#b67a0e" font-size="10" font-weight="600">summarize → speak</text>
+
+          <g>
+            <rect x="40" y="400" width="160" height="64" rx="10" fill="#e2daf4" stroke="#6a4fbf"/>
+            <text x="50" y="420" fill="#6a4fbf" font-size="9" font-weight="700" letter-spacing="1.5">● STATE · RESPOND</text>
+            <text x="50" y="438" fill="#1a1a19" font-size="13" font-weight="700">RESPONDING</text>
+            <text x="50" y="452" fill="#5c5b57" font-size="10">TTS stream · mic_muted=true</text>
+          </g>
+
+          <path d="M 120 464 L 120 510 L 260 510 L 260 540" stroke="#8f8e88" stroke-width="1.5" fill="none" marker-end="url(#arL)"/>
+          <text x="128" y="500" fill="#5c5b57" font-size="10" font-weight="600">done + 200ms buffer</text>
+          <text x="128" y="514" fill="#8f8e88" font-size="9">mic_muted = false</text>
+
+          <g>
+            <rect x="260" y="540" width="160" height="64" rx="10" fill="#dce8f4" stroke="#2a6db2" stroke-dasharray="3 2"/>
+            <text x="270" y="560" fill="#2a6db2" font-size="9" font-weight="700" letter-spacing="1.5">● STATE · FOLLOW</text>
+            <text x="270" y="578" fill="#1a1a19" font-size="12" font-weight="700">FOLLOW_UP_LISTEN</text>
+            <text x="270" y="594" fill="#5c5b57" font-size="10">15 s window · no wake needed</text>
+          </g>
+
+          <path d="M 260 572 C 180 572 150 400 200 204 L 258 180" stroke="#2a6db2" stroke-width="1.3" fill="none" stroke-dasharray="5 3" marker-end="url(#arL-c)"/>
+          <text x="130" y="380" fill="#2a6db2" font-size="10" transform="rotate(-90 130 380)" font-weight="600">speech detected</text>
+
+          <path d="M 420 572 C 540 572 560 240 420 60" stroke="#8f8e88" stroke-width="1.3" fill="none" stroke-dasharray="5 3" marker-end="url(#arL)"/>
+          <text x="572" y="340" fill="#5c5b57" font-size="10" transform="rotate(90 572 340)" font-weight="600">timeout · no speech</text>
+
+          <!-- ERROR -->
+          <g>
+            <rect x="40" y="260" width="160" height="64" rx="10" fill="#f4d6d2" stroke="#b93a2f" stroke-dasharray="4 2"/>
+            <text x="50" y="280" fill="#b93a2f" font-size="9" font-weight="700" letter-spacing="1.5">● STATE · ERROR</text>
+            <text x="50" y="298" fill="#1a1a19" font-size="13" font-weight="700">ERROR</text>
+            <text x="50" y="312" fill="#5c5b57" font-size="10">asr empty · hermes timeout</text>
+          </g>
+          <path d="M 260 292 L 200 292" stroke="#b93a2f" stroke-width="1.3" fill="none" marker-end="url(#arL-r)"/>
+          <path d="M 120 260 C 120 180 200 120 260 60" stroke="#b93a2f" stroke-width="1.3" fill="none" stroke-dasharray="5 3" marker-end="url(#arL-r)"/>
+
+          <g transform="translate(40, 660)">
+            <rect x="0" y="0" width="600" height="40" rx="4" fill="#ffffff" stroke="#e5e3db"/>
+            <circle cx="16" cy="20" r="4" fill="#2a6db2"/><text x="26" y="24" fill="#5c5b57" font-size="10">happy path</text>
+            <circle cx="126" cy="20" r="4" fill="#b67a0e"/><text x="136" y="24" fill="#5c5b57" font-size="10">tool delegation</text>
+            <circle cx="256" cy="20" r="4" fill="#6a4fbf"/><text x="266" y="24" fill="#5c5b57" font-size="10">tts playback</text>
+            <circle cx="366" cy="20" r="4" fill="#b93a2f"/><text x="376" y="24" fill="#5c5b57" font-size="10">error path</text>
+            <circle cx="456" cy="20" r="4" fill="#8f8e88"/><text x="466" y="24" fill="#5c5b57" font-size="10">neutral transition</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="panel">
+        <div class="panel-h"><span><span class="num">B</span> · TURN PIPELINE · single dialogue turn</span><span class="right">&lt;3 s typical · &lt;30 s w/ tool</span></div>
+
+        <div class="step">
+          <div class="idx">01</div>
+          <div class="body">
+            <div class="t">WAKE DETECTED <span class="badge">cpu</span></div>
+            <div class="d">openWakeWord score ≥ 0.7 with Silero VAD confirmation. Double-gate removes ~90% false positives vs a single layer.</div>
+            <div class="meta">event: <code>wake</code> · <code>play_asset(voxcpm_zai.wav)</code> ≈ 200 ms</div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="idx">02</div>
+          <div class="body">
+            <div class="t">COMMAND CAPTURE <span class="badge">half-duplex</span></div>
+            <div class="d">Mic stream buffered until VAD reports 0.5 s trailing silence or hard timeout 10 s.</div>
+            <div class="meta">event: <code>asr_start</code> · duration ≈ 1–5 s</div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="idx green">03</div>
+          <div class="body">
+            <div class="t">SPEECH-TO-TEXT <span class="badge">:8002</span></div>
+            <div class="d">Qwen3-ASR-1.7B (vLLM) transcribes, then a proper-noun regex pass (贾维斯/Horses → Hermes) hardens the wake-word mis-recognition tail.</div>
+            <div class="meta">event: <code>asr_done</code> · elapsed ≈ 0.2 s</div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="idx amber">04</div>
+          <div class="body">
+            <div class="t">DUAL-AGENT DECISION <span class="badge">:8000 · stream</span></div>
+            <div class="d">Subconscious (Qwen3.6-35B) receives rolling 6-turn history + tool schema. Either answers directly or emits <code>tool_calls[invoke_hermes]</code>.</div>
+            <div class="split">
+              <div class="branch a">
+                <div class="h">A · DIRECT REPLY</div>
+                <p>chit-chat, facts, short advice</p>
+                <small>1-3 s end-to-end</small>
+              </div>
+              <div class="branch b">
+                <div class="h">B · INVOKE_HERMES</div>
+                <p>files, shell, web, NAS, research</p>
+                <small>waiting beep · 2 s pulse</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="idx amber">05</div>
+          <div class="body">
+            <div class="t">HERMES AGENTIC RUN <span class="badge">:8004 · optional</span></div>
+            <div class="d">Subprocess <code>~/.local/bin/hermes chat -q</code> against the same SGLang backend; tool-using loop with file / shell / net access. Result fed back to subconscious for a 1-2 sentence spoken summary.</div>
+            <div class="meta">event: <code>hermes_start → tick(2s) → hermes_done</code> · ≤ 120 s</div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="idx purple">06</div>
+          <div class="body">
+            <div class="t">TTS PLAYBACK <span class="badge">:8003 · stream</span></div>
+            <div class="d">VoxCPM2 with JARVIS voice reference, 48 kHz PCM, peak-normalized to -3 dBFS. <code>mic_muted=True</code> for duration + 200 ms tail buffer.</div>
+            <div class="meta">event: <code>tts_start → playing(500ms) → tts_done</code></div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="idx">07</div>
+          <div class="body">
+            <div class="t">FOLLOW-UP WINDOW <span class="badge">15 s</span></div>
+            <div class="d">Mic unmutes after tail; VAD with stricter 0.7 threshold listens for a follow-up question — no second wake word required. Timeout returns to IDLE.</div>
+            <div class="meta">event: <code>state: RESPONDING → FOLLOW_UP_LISTEN</code></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></div></div>
+
+<!-- =========================================================
+     4 · DUAL-AGENT DECISION MATRIX
+     ========================================================= -->
+<div class="scaler"><div class="scaler-inner" data-sheet-w="1600"><div class="sheet" style="width: 1600px;">
+  <span class="sheet-label">04 · DUAL-AGENT ROUTING · 双智能体路由</span>
+  <div class="section">
+    <h2>Dual-Agent Routing<span class="zh">潜意识如何决定是否升级到主意识</span></h2>
+    <div class="section-sub">// subconscious sees tool schema and chooses at each turn · ~80% handled directly</div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-h"><span><span class="num">A</span> · DECISION RULES</span><span class="right">system prompt · few-shot</span></div>
+        <div class="decide-grid">
+          <div class="decide-col a">
+            <h4>A · DIRECT REPLY · 潜意识直答</h4>
+            <ul>
+              <li>闲聊 · 打招呼 · 感谢</li>
+              <li>事实问答（今天星期几 / 2+2 / 简单百科）</li>
+              <li>简短建议 · 家里常识</li>
+              <li>对自己身份的回答</li>
+              <li>无需实时数据 / 无副作用</li>
+            </ul>
+            <div class="example">
+              <b>user</b> · "你是谁"<br/>
+              <b>sub</b> · "我是 Hermes, Peter 的家庭语音助手"<br/>
+              <span style="color:var(--cyan)">→ 不调用工具</span>
+            </div>
+          </div>
+          <div class="decide-col b">
+            <h4>B · INVOKE HERMES · 主意识委托</h4>
+            <ul>
+              <li>文件 / 命令 / shell 操作</li>
+              <li>访问 NAS · Raphael 知识库 · vault</li>
+              <li>多步推理 · 对比 / 总结 / 研究</li>
+              <li>实时信息（天气具体 / 股票 / 新闻）</li>
+              <li>预期耗时 &gt; 3 秒的深度任务</li>
+            </ul>
+            <div class="example">
+              <b>user</b> · "帮我看看今天的加密货币行情"<br/>
+              <b>sub</b> · <code style="color:var(--amber)">invoke_hermes(task="汇总今日主要加密货币行情")</code><br/>
+              <span style="color:var(--amber)">→ 等待心跳音循环</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 18px; padding: 14px; background: var(--surface); border: 1px dashed var(--border-strong); border-radius: 6px; font-family: var(--mono); font-size: 11px; color: var(--ink-muted); line-height: 1.7;">
+          <div style="font-size: 10px; letter-spacing: 1.5px; color: var(--accent); font-weight: 700; margin-bottom: 6px;">TOOL SCHEMA · OpenAI-compat</div>
+          <code>name:</code> invoke_hermes<br/>
+          <code>description:</code> 委托深度推理 / 工具链 / 长任务 (文件 / shell / web / NAS / calendar)<br/>
+          <code>params:</code> task &lt;str&gt;, timeout_s &lt;int=30, 10-120&gt;
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-h"><span><span class="num">B</span> · SEQUENCE · tool-call turn</span><span class="right">example · 15 s typical</span></div>
+        <div class="timeline">
+          <div class="tl-time e">t+0.0s</div>
+          <div class="tl-body"><span class="e-type acc">wake</span><div class="e-desc">openWakeWord score 0.82 + VAD confirms</div><div class="e-payload">→ play_asset(voxcpm_zai.wav)</div></div>
+
+          <div class="tl-time">t+0.2s</div>
+          <div class="tl-body"><span class="e-type">state</span><div class="e-desc">IDLE → LISTENING</div></div>
+
+          <div class="tl-time">t+1.8s</div>
+          <div class="tl-body"><span class="e-type asr">asr_start</span><div class="e-desc">EOS detected after 0.5 s silence</div><div class="e-payload">duration: 1.6 s · sample_rate: 16 kHz</div></div>
+
+          <div class="tl-time">t+2.1s</div>
+          <div class="tl-body"><span class="e-type asr">asr_done</span><div class="e-desc">"帮我看看今天的加密货币行情"</div><div class="e-payload">lang: zh · elapsed: 0.28 s</div></div>
+
+          <div class="tl-time e">t+2.2s</div>
+          <div class="tl-body"><span class="e-type sub">sub_start</span><div class="e-desc">subconscious receives user msg + 6-turn history</div></div>
+
+          <div class="tl-time">t+2.6s</div>
+          <div class="tl-body"><span class="e-type sub">sub_tool</span><div class="e-desc">tool_calls[0] = invoke_hermes</div><div class="e-payload">args: task="汇总今日主要加密货币行情"</div></div>
+
+          <div class="tl-time e">t+2.7s</div>
+          <div class="tl-body"><span class="e-type main">hermes_start</span><div class="e-desc">subprocess spawned · begin waiting beep loop</div><div class="e-payload">pulse: 0.3s on / 1.7s off</div></div>
+
+          <div class="tl-time">t+4.7s</div>
+          <div class="tl-body"><span class="e-type main">hermes_tick</span><div class="e-desc">elapsed 2.0s</div></div>
+
+          <div class="tl-time">t+13.0s</div>
+          <div class="tl-body"><span class="e-type main">hermes_done</span><div class="e-desc">agent returned with market summary</div><div class="e-payload">elapsed: 10.3s · ok: true</div></div>
+
+          <div class="tl-time">t+13.1s</div>
+          <div class="tl-body"><span class="e-type sub">sub_done</span><div class="e-desc">subconscious summarizes to 1 spoken sentence</div></div>
+
+          <div class="tl-time">t+13.3s</div>
+          <div class="tl-body"><span class="e-type tts">tts_start</span><div class="e-desc">VoxCPM2 · JARVIS ref · stream begins</div></div>
+
+          <div class="tl-time e">t+15.8s</div>
+          <div class="tl-body"><span class="e-type tts">tts_done</span><div class="e-desc">playback complete · +200 ms tail buffer</div><div class="e-payload">state: RESPONDING → FOLLOW_UP_LISTEN</div></div>
+
+          <div class="tl-time">t+30.8s</div>
+          <div class="tl-body"><span class="e-type">state</span><div class="e-desc">no follow-up · FOLLOW_UP_LISTEN → IDLE</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></div></div>
+
+<!-- =========================================================
+     5 · DEPLOYMENT + OBSERVABILITY
+     ========================================================= -->
+<div class="scaler"><div class="scaler-inner" data-sheet-w="1600"><div class="sheet" style="width: 1600px;">
+  <span class="sheet-label">05 · DEPLOYMENT · SYSTEMD · 部署拓扑</span>
+  <div class="section">
+    <h2>Deployment &amp; Observability<span class="zh">部署拓扑 · systemd 依赖 · TUI 观测</span></h2>
+    <div class="section-sub">// 7 systemd units with explicit After= chain · TUI reads events.jsonl for live debug</div>
+
+    <div class="grid-1-2">
+      <div class="panel">
+        <div class="panel-h"><span><span class="num">A</span> · SYSTEMD UNITS</span><span class="right">Restart=on-failure · RestartSec=10</span></div>
+        <div class="kv-list">
+          <div class="kv-row cyan">
+            <div class="port">:8000</div>
+            <div><div class="svc-name">sglang-qwen36.service</div><div class="svc-desc">SGLang · Qwen3.6-35B · tool-call parser</div></div>
+            <div class="svc-ram"><b>~60 GB</b>shared backend</div>
+          </div>
+          <div class="kv-row green">
+            <div class="port">:8001</div>
+            <div><div class="svc-name">vllm-qwen3-asr.service</div><div class="svc-desc">vLLM · Qwen3-ASR-1.7B</div></div>
+            <div class="svc-ram"><b>~6 GB</b>asr backend</div>
+          </div>
+          <div class="kv-row green">
+            <div class="port">:8002</div>
+            <div><div class="svc-name">qwen3-asr-shim.service</div><div class="svc-desc">FastAPI · /v1/audio/transcriptions</div></div>
+            <div class="svc-ram"><b>cpu</b>shim</div>
+          </div>
+          <div class="kv-row purple">
+            <div class="port">:8003</div>
+            <div><div class="svc-name">voxcpm2-tts.service</div><div class="svc-desc">VoxCPM2 · JARVIS ref · stream 48 kHz</div></div>
+            <div class="svc-ram"><b>~8 GB</b>tts</div>
+          </div>
+          <div class="kv-row amber">
+            <div class="port">:8004</div>
+            <div><div class="svc-name">hermes-shim.service</div><div class="svc-desc">OpenAI-compat · hermes subprocess · sessions</div></div>
+            <div class="svc-ram"><b>cpu</b>shim</div>
+          </div>
+          <div class="kv-row accent">
+            <div class="port">daemon</div>
+            <div><div class="svc-name">jarvis-v3.service</div><div class="svc-desc">asyncio state machine · mic · wake · orch</div></div>
+            <div class="svc-ram"><b>cpu</b>main</div>
+          </div>
+          <div class="kv-row">
+            <div class="port">tui</div>
+            <div><div class="svc-name">tui/dashboard.py</div><div class="svc-desc">rich.Live · 5-panel · tails events.jsonl</div></div>
+            <div class="svc-ram"><b>local</b>debug</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-h"><span><span class="num">B</span> · SYSTEMD DEPENDENCY GRAPH · After= chain</span><span class="right">startup ≈ 2 min</span></div>
+        <svg viewBox="0 0 820 360" style="width: 100%; height: 340px; display: block;" font-family="JetBrains Mono" font-size="11">
+          <defs>
+            <marker id="arS" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#8f8e88"/>
+            </marker>
+          </defs>
+
+          <!-- L0: backends -->
+          <g>
+            <rect x="20" y="40" width="180" height="60" rx="8" fill="#dce8f4" stroke="#2a6db2"/>
+            <text x="110" y="60" text-anchor="middle" fill="#2a6db2" font-size="9" font-weight="700" letter-spacing="1.5">L0 · MODEL SERVER</text>
+            <text x="110" y="78" text-anchor="middle" fill="#1a1a19" font-size="12" font-weight="700">sglang-qwen36</text>
+            <text x="110" y="92" text-anchor="middle" fill="#5c5b57" font-size="10">:8000 · cold 60s</text>
+          </g>
+          <g>
+            <rect x="20" y="120" width="180" height="60" rx="8" fill="#d7e6d2" stroke="#3a7a3a"/>
+            <text x="110" y="140" text-anchor="middle" fill="#3a7a3a" font-size="9" font-weight="700" letter-spacing="1.5">L0 · MODEL SERVER</text>
+            <text x="110" y="158" text-anchor="middle" fill="#1a1a19" font-size="12" font-weight="700">vllm-qwen3-asr</text>
+            <text x="110" y="172" text-anchor="middle" fill="#5c5b57" font-size="10">:8001 · cold 60s</text>
+          </g>
+
+          <!-- L1: shims -->
+          <g>
+            <rect x="280" y="40" width="180" height="60" rx="8" fill="#f2e3c2" stroke="#b67a0e"/>
+            <text x="370" y="60" text-anchor="middle" fill="#b67a0e" font-size="9" font-weight="700" letter-spacing="1.5">L1 · SHIM</text>
+            <text x="370" y="78" text-anchor="middle" fill="#1a1a19" font-size="12" font-weight="700">hermes-shim</text>
+            <text x="370" y="92" text-anchor="middle" fill="#5c5b57" font-size="10">:8004 · &lt;5s</text>
+          </g>
+          <g>
+            <rect x="280" y="120" width="180" height="60" rx="8" fill="#d7e6d2" stroke="#3a7a3a"/>
+            <text x="370" y="140" text-anchor="middle" fill="#3a7a3a" font-size="9" font-weight="700" letter-spacing="1.5">L1 · SHIM</text>
+            <text x="370" y="158" text-anchor="middle" fill="#1a1a19" font-size="12" font-weight="700">qwen3-asr-shim</text>
+            <text x="370" y="172" text-anchor="middle" fill="#5c5b57" font-size="10">:8002 · retry loop</text>
+          </g>
+          <g>
+            <rect x="280" y="200" width="180" height="60" rx="8" fill="#e2daf4" stroke="#6a4fbf"/>
+            <text x="370" y="220" text-anchor="middle" fill="#6a4fbf" font-size="9" font-weight="700" letter-spacing="1.5">L1 · TTS</text>
+            <text x="370" y="238" text-anchor="middle" fill="#1a1a19" font-size="12" font-weight="700">voxcpm2-tts</text>
+            <text x="370" y="252" text-anchor="middle" fill="#5c5b57" font-size="10">:8003 · cold 30s</text>
+          </g>
+
+          <!-- L2: daemon -->
+          <g>
+            <rect x="540" y="120" width="180" height="60" rx="8" fill="#f3d7c9" stroke="#c96442"/>
+            <text x="630" y="140" text-anchor="middle" fill="#c96442" font-size="9" font-weight="700" letter-spacing="1.5">L2 · DAEMON</text>
+            <text x="630" y="158" text-anchor="middle" fill="#1a1a19" font-size="12" font-weight="700">jarvis-v3</text>
+            <text x="630" y="172" text-anchor="middle" fill="#5c5b57" font-size="10">state machine</text>
+          </g>
+          <g>
+            <rect x="540" y="220" width="180" height="50" rx="8" fill="#ffffff" stroke="#d0cdc2" stroke-dasharray="3 2"/>
+            <text x="630" y="240" text-anchor="middle" fill="#5c5b57" font-size="9" font-weight="700" letter-spacing="1.5">L3 · DEBUG (optional)</text>
+            <text x="630" y="258" text-anchor="middle" fill="#1a1a19" font-size="12" font-weight="700">tui/dashboard.py</text>
+          </g>
+
+          <!-- arrows L0 → L1 -->
+          <path d="M 200 70 L 280 70" stroke="#8f8e88" stroke-width="1.3" marker-end="url(#arS)"/>
+          <path d="M 200 150 L 280 150" stroke="#8f8e88" stroke-width="1.3" marker-end="url(#arS)"/>
+          <path d="M 200 70 C 240 70 240 150 280 230" stroke="#8f8e88" stroke-width="1.3" fill="none" marker-end="url(#arS)" opacity="0.4"/>
+          <!-- arrows L1 → L2 -->
+          <path d="M 460 70 C 500 70 500 150 540 150" stroke="#8f8e88" stroke-width="1.3" fill="none" marker-end="url(#arS)"/>
+          <path d="M 460 150 L 540 150" stroke="#8f8e88" stroke-width="1.3" marker-end="url(#arS)"/>
+          <path d="M 460 230 C 500 230 500 160 540 150" stroke="#8f8e88" stroke-width="1.3" fill="none" marker-end="url(#arS)"/>
+          <!-- L2 → L3 -->
+          <path d="M 630 180 L 630 220" stroke="#8f8e88" stroke-width="1.3" stroke-dasharray="3 2" marker-end="url(#arS)"/>
+          <text x="642" y="200" fill="#5c5b57" font-size="9">tails events.jsonl</text>
+
+          <!-- labels -->
+          <text x="110" y="20" text-anchor="middle" fill="#8f8e88" font-size="9" letter-spacing="1.5" font-weight="700">LAYER 0 · backends</text>
+          <text x="370" y="20" text-anchor="middle" fill="#8f8e88" font-size="9" letter-spacing="1.5" font-weight="700">LAYER 1 · service shims</text>
+          <text x="630" y="20" text-anchor="middle" fill="#8f8e88" font-size="9" letter-spacing="1.5" font-weight="700">LAYER 2-3 · daemon + tui</text>
+
+          <!-- legend -->
+          <g transform="translate(20, 310)">
+            <rect x="0" y="0" width="780" height="36" rx="4" fill="#ffffff" stroke="#e5e3db"/>
+            <text x="12" y="22" fill="#5c5b57" font-size="10"><tspan fill="#1a1a19" font-weight="700">After=</tspan> chain · every unit has Restart=on-failure / RestartSec=10 · retry loop tolerates 60 s cold starts · `sudo systemctl restart jarvis-v3` fully ready in ~2 min</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Event taxonomy -->
+    <div class="panel" style="margin-top: 24px;">
+      <div class="panel-h"><span><span class="num">C</span> · EVENT TAXONOMY · events.jsonl schema</span><span class="right">append-only · thread-safe · tailed by TUI</span></div>
+      <table class="tbl">
+        <thead>
+          <tr><th style="width:140px">type</th><th style="width:260px">fields</th><th style="width:160px">trigger</th><th>purpose</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><b style="color:var(--ink)">state</b></td><td><code>{from, to}</code></td><td>state machine transition</td><td>5-state lifecycle; TUI state panel</td></tr>
+          <tr><td><b style="color:var(--ink)">mic</b></td><td><code>{rms_dbfs, peak}</code></td><td>every ~200 ms</td><td>TUI waveform sparkline</td></tr>
+          <tr><td><b style="color:var(--accent)">wake</b></td><td><code>{score, triggered}</code></td><td>openWakeWord predict</td><td>wake-score distribution tuning</td></tr>
+          <tr><td><b style="color:var(--green)">asr_start / asr_done</b></td><td><code>{duration_s} / {text, lang, elapsed_s}</code></td><td>ASR request lifecycle</td><td>latency + lang ID</td></tr>
+          <tr><td><b style="color:var(--cyan)">sub_start / sub_token / sub_tool / sub_done</b></td><td><code>{user_text} / {delta} / {tool, args} / {content, tool_called, elapsed_s}</code></td><td>subconscious stream</td><td>live tokens in TUI + tool-call ratio</td></tr>
+          <tr><td><b style="color:var(--amber)">hermes_start / hermes_tick / hermes_done</b></td><td><code>{task, timeout_s} / {elapsed_s} / {reply, ok, elapsed_s}</code></td><td>agentic delegation</td><td>progress spinner + success rate</td></tr>
+          <tr><td><b style="color:var(--purple)">tts_start / tts_playing / tts_done</b></td><td><code>{text, chars} / {bytes_played, elapsed_s} / {duration_s, elapsed_s}</code></td><td>VoxCPM playback</td><td>TUI progress bar</td></tr>
+          <tr><td><b style="color:var(--red)">error</b></td><td><code>{where, msg}</code></td><td>any exception path</td><td>error-tail panel · audit</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div></div></div>
+
+<!-- =========================================================
+     6 · DESIGN TENETS + RISK REGISTER + EVOLUTION
+     ========================================================= -->
+<div class="scaler"><div class="scaler-inner" data-sheet-w="1600"><div class="sheet" style="width: 1600px;">
+  <span class="sheet-label">06 · DESIGN TENETS · RISK · EVOLUTION</span>
+  <div class="section">
+    <h2>Design Tenets &amp; Risk Register<span class="zh">核心决策 · 风险清单 · 版本演进</span></h2>
+    <div class="section-sub">// why we chose this architecture and what could still break it</div>
+
+    <div class="feat-grid">
+      <div class="feat"><div class="n">TENET 01</div><h4>Half-duplex over full-duplex</h4><p>放弃 v2 的全双工 barge-in 调度。简单、可维护、家庭场景够用。</p></div>
+      <div class="feat"><div class="n">TENET 02</div><h4>Single-gate wake</h4><p>wake-score + VAD 一次判定，不做 ASR 二次确认 —— 业界最佳实践（openWakeWord / Amazon Science）。</p></div>
+      <div class="feat"><div class="n">TENET 03</div><h4>Dual-agent brain</h4><p>潜意识处理 80% 日常对话求快（TTFB &lt; 1s），主意识 Hermes 按工具委托处理深度任务。</p></div>
+      <div class="feat"><div class="n">TENET 04</div><h4>Software mic-mute</h4><p>TTS 播放期间直接丢帧，不依赖 PipeWire AEC —— 可预测、可调试。</p></div>
+      <div class="feat"><div class="n">TENET 05</div><h4>Local-only inference</h4><p>零外发请求、所有模型跑在单机 RTX PRO 6000 上。隐私即架构。</p></div>
+      <div class="feat"><div class="n">TENET 06</div><h4>systemd everywhere</h4><p>每个服务独立进程 + Restart=on-failure + After= 依赖链，7×24 自愈。</p></div>
+      <div class="feat"><div class="n">TENET 07</div><h4>Observability first</h4><p>结构化 events.jsonl + TUI dashboard，每个事件都可事后回放。</p></div>
+      <div class="feat"><div class="n">TENET 08</div><h4>Follow-up window</h4><p>TTS 完播后 15s 免唤醒词窗口，模拟真人对话节奏。</p></div>
+      <div class="feat"><div class="n">TENET 09</div><h4>Streaming by default</h4><p>TTS chunked、subconscious token-stream、ASR 小音频批——所有能流式的都流。</p></div>
+    </div>
+
+    <div class="panel" style="margin-top: 24px;">
+      <div class="panel-h"><span><span class="num">B</span> · RISK REGISTER</span><span class="right">mitigation-first</span></div>
+      <table class="tbl">
+        <thead><tr><th style="width:260px">risk</th><th style="width:100px">prob</th><th style="width:100px">impact</th><th>mitigation</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><b>Qwen3.6 tool_call 格式不稳</b><br/>occasionally emits XML instead of structured JSON</td>
+            <td><span class="pill med">med</span></td>
+            <td><span class="pill high">high</span></td>
+            <td>SGLang <code>qwen3_coder</code> parser enabled · fallback to manual <code>&lt;tool_call&gt;</code> regex parse · log every decision</td>
+          </tr>
+          <tr>
+            <td><b>潜意识判定错误</b><br/>simple query mistakenly escalated to Hermes</td>
+            <td><span class="pill med">med</span></td>
+            <td><span class="pill med">med</span></td>
+            <td>system prompt contains multiple few-shot examples · tool_call ratio tracked in TUI · tune weekly</td>
+          </tr>
+          <tr>
+            <td><b>Echo re-triggers on speakers</b><br/>VoxCPM playback captured back by Poly Sync mic</td>
+            <td><span class="pill med">med</span></td>
+            <td><span class="pill high">high</span></td>
+            <td>software <code>mic_muted=True</code> drops frames; +200 ms tail buffer before unmute · AEC treated as bonus not necessity</td>
+          </tr>
+          <tr>
+            <td><b>Hermes timeout on long agentic runs</b></td>
+            <td><span class="pill med">med</span></td>
+            <td><span class="pill med">med</span></td>
+            <td>timeout 120s + 2s heartbeat beep · graceful fallback: sub announces "让我想想, 一会儿给你答案"</td>
+          </tr>
+          <tr>
+            <td><b>PipeWire device index changes on reboot</b></td>
+            <td><span class="pill low">low</span></td>
+            <td><span class="pill high">high</span></td>
+            <td><code>_find_device("Poly Sync")</code> by name substring · never hardcode index</td>
+          </tr>
+          <tr>
+            <td><b>Voice reference polluted by BGM</b><br/>original trailer has multiple speakers + music</td>
+            <td><span class="pill med">med</span></td>
+            <td><span class="pill med">med</span></td>
+            <td>ffmpeg silencedetect auto-trim · pick highest-RMS / lowest-stddev 5-10 s window · peak-normalize to -3 dBFS in TTS pipe</td>
+          </tr>
+          <tr>
+            <td><b>History grows beyond context window</b></td>
+            <td><span class="pill low">low</span></td>
+            <td><span class="pill low">low</span></td>
+            <td>6-turn sliding window · truncate if turn &gt; 1000 tokens · SGLang prefix cache absorbs repetition cost</td>
+          </tr>
+          <tr>
+            <td><b>Follow-up window false triggers</b><br/>TV / family conversation in 15 s window</td>
+            <td><span class="pill med">med</span></td>
+            <td><span class="pill med">med</span></td>
+            <td>stricter VAD threshold 0.7 (vs 0.5 in IDLE) · 3 consecutive timeouts → cooldown 60 s</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel" style="margin-top: 24px;">
+      <div class="panel-h"><span><span class="num">C</span> · VERSION EVOLUTION · v1 → v3 · PHASE 5</span><span class="right">lessons compounded</span></div>
+      <svg viewBox="0 0 1400 200" style="width: 100%; height: 200px; display: block;" font-family="JetBrains Mono" font-size="11">
+        <defs>
+          <marker id="arE" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#8f8e88"/>
+          </marker>
+        </defs>
+        <!-- timeline bar -->
+        <line x1="60" y1="110" x2="1340" y2="110" stroke="#e5e3db" stroke-width="2"/>
+
+        <!-- v1 -->
+        <circle cx="120" cy="110" r="8" fill="#ffffff" stroke="#8f8e88" stroke-width="2"/>
+        <text x="120" y="90" text-anchor="middle" fill="#8f8e88" font-size="10" font-weight="700" letter-spacing="1">v1 · 2026.02</text>
+        <text x="120" y="136" text-anchor="middle" fill="#1a1a19" font-size="12" font-weight="700">whisper + MCP</text>
+        <text x="120" y="152" text-anchor="middle" fill="#5c5b57" font-size="10">text chat · no wake</text>
+        <text x="120" y="168" text-anchor="middle" fill="#b93a2f" font-size="9">pain: manual trigger</text>
+
+        <!-- v2 -->
+        <circle cx="380" cy="110" r="8" fill="#f4d6d2" stroke="#b93a2f" stroke-width="2"/>
+        <text x="380" y="90" text-anchor="middle" fill="#b93a2f" font-size="10" font-weight="700" letter-spacing="1">v2 · 2026.03</text>
+        <text x="380" y="136" text-anchor="middle" fill="#1a1a19" font-size="12" font-weight="700">MiniCPM-o full-duplex</text>
+        <text x="380" y="152" text-anchor="middle" fill="#5c5b57" font-size="10">Pipecat + wake + whisper 2nd-pass</text>
+        <text x="380" y="168" text-anchor="middle" fill="#b93a2f" font-size="9">pain: wake misrecog · complexity</text>
+
+        <!-- v3 Phase 0-3 -->
+        <circle cx="680" cy="110" r="8" fill="#dce8f4" stroke="#2a6db2" stroke-width="2"/>
+        <text x="680" y="90" text-anchor="middle" fill="#2a6db2" font-size="10" font-weight="700" letter-spacing="1">v3 · phase 0-3 · 2026.04</text>
+        <text x="680" y="136" text-anchor="middle" fill="#1a1a19" font-size="12" font-weight="700">half-duplex · Hermes only</text>
+        <text x="680" y="152" text-anchor="middle" fill="#5c5b57" font-size="10">Wyoming fork + single-gate wake</text>
+        <text x="680" y="168" text-anchor="middle" fill="#b67a0e" font-size="9">pain: Hermes latency 5-15s</text>
+
+        <!-- v3 Phase 4 -->
+        <circle cx="960" cy="110" r="8" fill="#f3d7c9" stroke="#c96442" stroke-width="2"/>
+        <text x="960" y="90" text-anchor="middle" fill="#c96442" font-size="10" font-weight="700" letter-spacing="1">v3 · phase 4 · 2026.04</text>
+        <text x="960" y="136" text-anchor="middle" fill="#1a1a19" font-size="12" font-weight="700">dual-agent brain</text>
+        <text x="960" y="152" text-anchor="middle" fill="#5c5b57" font-size="10">subconscious + invoke_hermes tool</text>
+        <text x="960" y="168" text-anchor="middle" fill="#3a7a3a" font-size="9">win: TTFB &lt; 1s · 80% no tool</text>
+
+        <!-- v3 Phase 5 -->
+        <circle cx="1240" cy="110" r="10" fill="#c96442" stroke="#c96442" stroke-width="2"/>
+        <text x="1240" y="90" text-anchor="middle" fill="#c96442" font-size="10" font-weight="700" letter-spacing="1">v3 · phase 5 · now</text>
+        <text x="1240" y="136" text-anchor="middle" fill="#1a1a19" font-size="12" font-weight="700">TUI dashboard + voice</text>
+        <text x="1240" y="152" text-anchor="middle" fill="#5c5b57" font-size="10">events.jsonl · ffmpeg ref-trim</text>
+        <text x="1240" y="168" text-anchor="middle" fill="#3a7a3a" font-size="9">win: observability · -3 dBFS norm</text>
+
+        <!-- arrows -->
+        <path d="M 128 110 L 368 110" stroke="#8f8e88" stroke-width="1.3" marker-end="url(#arE)"/>
+        <path d="M 388 110 L 668 110" stroke="#8f8e88" stroke-width="1.3" marker-end="url(#arE)"/>
+        <path d="M 688 110 L 948 110" stroke="#8f8e88" stroke-width="1.3" marker-end="url(#arE)"/>
+        <path d="M 968 110 L 1228 110" stroke="#c96442" stroke-width="1.6" marker-end="url(#arE)"/>
+      </svg>
+    </div>
+  </div>
+</div></div></div>
+
+<!-- =========================================================
+     7 · A3 POSTER (LIGHT)
+     ========================================================= -->
+<div class="scaler"><div class="scaler-inner" data-sheet-w="1240"><div class="sheet" style="width: 1240px;">
+  <span class="sheet-label">07 · A3 POSTER · 1240×1754</span>
+  <div class="poster" data-screen-label="07 Poster">
+    <div class="poster-grid-bg"></div>
+    <div class="poster-corner"><span></span></div>
+    <div class="poster-inner">
+
+      <div class="poster-top">
+        <div class="kv">
+          <div>PROJECT · <b>jarvis-v3</b></div>
+          <div>VERSION · <b>3.0 · PHASE 5</b></div>
+          <div>HOST · <b>totodile</b></div>
+        </div>
+        <div class="kv">
+          <div>LAN · <b>192.168.100.233</b></div>
+          <div>DATE · <b>2026.04.19</b></div>
+        </div>
+      </div>
+
+      <h1 class="poster-title"><span class="j">J</span>ARVIS<span class="v3">v3</span></h1>
+      <div class="poster-tag">An always-on, half-duplex home voice assistant with a <em>subconscious</em> / <i>main-cortex</i> dual brain.</div>
+      <div class="poster-tag-zh">常驻唤醒词 · 半双工语音助手。潜意识模型处理 80% 日常对话，主意识 agent 按工具委托触发；本地 GPU 部署，零外发请求。</div>
+
+      <div class="stack-ticker">
+        <span class="t">runtime · <b>python 3.12</b></span>
+        <span class="t">subconscious · <b>SGLang · Qwen3.6-35B-A3B-FP8</b></span>
+        <span class="t">main · <b>Hermes CLI agent</b></span>
+        <span class="t">asr · <b>Qwen3-ASR-1.7B</b></span>
+        <span class="t">tts · <b>VoxCPM2 2B</b></span>
+        <span class="t">wake · <b>openWakeWord</b></span>
+        <span class="t">vad · <b>Silero</b></span>
+        <span class="t">orch · <b>asyncio · systemd</b></span>
+      </div>
+
+      <div class="poster-meta">
+        <div class="cell"><div class="k">TTFB · SUBCONSCIOUS</div><div class="v">&lt; 1<span class="unit">s</span></div></div>
+        <div class="cell"><div class="k">VRAM BUDGET</div><div class="v">74 / 96<span class="unit">GB</span></div></div>
+        <div class="cell"><div class="k">SYSTEMD UNITS</div><div class="v">7<span class="unit">services</span></div></div>
+        <div class="cell"><div class="k">UPTIME TARGET</div><div class="v">7×24<span class="unit">home</span></div></div>
+      </div>
+
+      <div class="centerpiece">
+        <div class="cp-label"><span class="num">FIG.01</span> · DUAL-AGENT BRAIN · 双智能体架构</div>
+        <div class="cp-brains">
+          <div class="brain sub">
+            <div class="role">SUBCONSCIOUS · 潜意识</div>
+            <div class="name">Instant Reply</div>
+            <div class="name-zh">潜意识直答 · ~80% traffic</div>
+            <div class="model">SGLang · Qwen3.6-35B-A3B-FP8 · native tools</div>
+            <ul>
+              <li>Chit-chat · facts · short advice</li>
+              <li>Streams tokens directly to TTS</li>
+              <li>6-turn sliding history, prefix-cached</li>
+              <li>Decides when to delegate upward</li>
+            </ul>
+            <div class="kpi">
+              <div><div class="k">TTFB</div><div class="v">&lt; 1 s</div></div>
+              <div><div class="k">context</div><div class="v">6 turns</div></div>
+              <div><div class="k">port</div><div class="v">:8000</div></div>
+            </div>
+          </div>
+
+          <div class="bridge">
+            <div class="arrow-top"><b>▲ tool_calls</b>invoke_hermes(task=…)</div>
+            <div class="line"></div>
+            <div class="tool-icon">⇅ TOOL</div>
+            <div class="line"></div>
+            <div class="arrow-bot"><b>▼ tool_result</b>summary ≤ 2 sentences</div>
+          </div>
+
+          <div class="brain main">
+            <div class="role">MAIN CORTEX · 主意识</div>
+            <div class="name">Deep Agent</div>
+            <div class="name-zh">主意识深思 · ~20% traffic</div>
+            <div class="model">Hermes CLI · agent loop · same backend</div>
+            <ul>
+              <li>File · shell · web · NAS · calendar</li>
+              <li>Multi-step reasoning &amp; tool chains</li>
+              <li>Heartbeat beep every 2 s while busy</li>
+              <li>120 s hard timeout, graceful fallback</li>
+            </ul>
+            <div class="kpi">
+              <div><div class="k">budget</div><div class="v">≤ 120 s</div></div>
+              <div><div class="k">tools</div><div class="v">agentic</div></div>
+              <div><div class="k">port</div><div class="v">:8004</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="poster-bottom">
+        <div class="svc-card">
+          <h3><span class="num">FIG.02</span> · SERVICE TOPOLOGY · 7 systemd units</h3>
+          <div class="kv-list">
+            <div class="kv-row cyan">
+              <div class="port">:8000</div>
+              <div><div class="svc-name">sglang-qwen36.service</div><div class="svc-desc">Qwen3.6-35B-A3B-FP8 · tool-call</div></div>
+              <div class="svc-ram"><b>~60 GB</b>shared</div>
+            </div>
+            <div class="kv-row green">
+              <div class="port">:8001</div>
+              <div><div class="svc-name">vllm-qwen3-asr.service</div><div class="svc-desc">Qwen3-ASR-1.7B (vLLM)</div></div>
+              <div class="svc-ram"><b>~6 GB</b>asr</div>
+            </div>
+            <div class="kv-row green">
+              <div class="port">:8002</div>
+              <div><div class="svc-name">qwen3-asr-shim.service</div><div class="svc-desc">FastAPI · /v1/audio/transcriptions</div></div>
+              <div class="svc-ram"><b>cpu</b>shim</div>
+            </div>
+            <div class="kv-row purple">
+              <div class="port">:8003</div>
+              <div><div class="svc-name">voxcpm2-tts.service</div><div class="svc-desc">VoxCPM2 · JARVIS voice ref</div></div>
+              <div class="svc-ram"><b>~8 GB</b>tts</div>
+            </div>
+            <div class="kv-row amber">
+              <div class="port">:8004</div>
+              <div><div class="svc-name">hermes-shim.service</div><div class="svc-desc">OpenAI-compat · hermes subprocess</div></div>
+              <div class="svc-ram"><b>cpu</b>shim</div>
+            </div>
+            <div class="kv-row accent">
+              <div class="port">daemon</div>
+              <div><div class="svc-name">jarvis-v3.service</div><div class="svc-desc">asyncio · mic · wake · orch</div></div>
+              <div class="svc-ram"><b>cpu</b>main</div>
+            </div>
+            <div class="kv-row">
+              <div class="port">tui</div>
+              <div><div class="svc-name">dashboard.py</div><div class="svc-desc">rich.Live · 5-panel · events.jsonl</div></div>
+              <div class="svc-ram"><b>local</b>debug</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="states-mini">
+          <h3><span class="num">FIG.03</span> · STATE MACHINE · 5 + ERROR</h3>
+          <div class="state-chain">
+            <div class="sc-row"><div class="dot" style="background: var(--green);"></div><div class="name">IDLE</div><div class="desc">always-on wake listener</div></div>
+            <div class="sc-row"><div class="dot" style="background: var(--cyan);"></div><div class="name">LISTENING</div><div class="desc">record command · VAD end-of-speech</div></div>
+            <div class="sc-row"><div class="dot" style="background: var(--accent);"></div><div class="name">PROCESSING</div><div class="desc">ASR → dual-agent decision</div></div>
+            <div class="sc-row"><div class="dot" style="background: var(--purple);"></div><div class="name">RESPONDING</div><div class="desc">TTS playback · mic muted</div></div>
+            <div class="sc-row"><div class="dot" style="background: var(--cyan);"></div><div class="name">FOLLOW_UP_LISTEN</div><div class="desc">15 s window · no wake needed</div></div>
+            <div class="sc-row"><div class="dot" style="background: var(--red);"></div><div class="name">ERROR</div><div class="desc">tone · log · return to IDLE</div></div>
+          </div>
+
+          <h3 style="margin-top:20px"><span class="num">FIG.04</span> · DESIGN TENETS · 核心决策</h3>
+          <div class="state-chain">
+            <div class="sc-row"><div class="dot" style="background: var(--cyan);"></div><div class="name" style="width:120px">Half-duplex</div><div class="desc">simpler · maintainable</div></div>
+            <div class="sc-row"><div class="dot" style="background: var(--cyan);"></div><div class="name" style="width:120px">Single gate</div><div class="desc">wake-score + VAD, no 2nd-pass</div></div>
+            <div class="sc-row"><div class="dot" style="background: var(--amber);"></div><div class="name" style="width:120px">Dual agents</div><div class="desc">TTFB vs depth, routed by tool</div></div>
+            <div class="sc-row"><div class="dot" style="background: var(--purple);"></div><div class="name" style="width:120px">SW mic-mute</div><div class="desc">drop frames, don't rely on AEC</div></div>
+            <div class="sc-row"><div class="dot" style="background: var(--green);"></div><div class="name" style="width:120px">Local only</div><div class="desc">zero outbound requests</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-strip">
+        <div class="tech">
+          <span>repo · <b class="repo">github.com/peter/jarvis-v3</b></span>
+          <span>license · <b>MIT</b></span>
+          <span>maintainer · <b>@peter</b></span>
+        </div>
+        <div>// "Hey Jarvis…" — half-duplex · on-prem · v3.0-phase5</div>
+      </div>
+    </div>
+  </div>
+</div></div></div>
+
+<script>
+(function(){
+  function scale(){
+    var bodyW = window.innerWidth || document.documentElement.clientWidth;
+    var avail = Math.max(bodyW - 48, 300);
+    // Collect data first, then apply - avoid layout thrashing
+    var items = [];
+    document.querySelectorAll('.scaler').forEach(function(sc){
+      var inner = sc.querySelector('.scaler-inner');
+      if(!inner) return;
+      items.push({sc: sc, inner: inner, w: parseInt(inner.dataset.sheetW || '1600', 10)});
+    });
+    // Reset all
+    items.forEach(function(it){
+      it.inner.style.transform = 'none';
+      it.inner.style.width = it.w + 'px';
+      it.inner.style.position = 'relative';
+      it.sc.style.height = 'auto';
+    });
+    void document.body.offsetHeight;
+    // Measure all natural heights BEFORE any scaling
+    items.forEach(function(it){
+      var sheet = it.inner.querySelector('.sheet');
+      it.naturalH = sheet ? sheet.offsetHeight : it.inner.offsetHeight;
+    });
+    // Now switch to absolute + scale
+    items.forEach(function(it){
+      var s = Math.min(1, avail / it.w);
+      it.inner.style.position = 'absolute';
+      it.inner.style.top = '0';
+      it.inner.style.left = '0';
+      it.inner.style.transform = 'scale(' + s + ')';
+      it.sc.style.height = Math.ceil(it.naturalH * s) + 'px';
+    });
+  }
+  window.addEventListener('load', scale);
+  window.addEventListener('resize', scale);
+  if(window.ResizeObserver){
+    var ro = new ResizeObserver(scale);
+    document.querySelectorAll('.scaler-inner').forEach(function(i){ ro.observe(i); });
+  }
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(function(){ scale(); setTimeout(scale, 100); });
+  }
+  // also re-scale when any image loads
+  document.querySelectorAll('img').forEach(function(img){ img.addEventListener('load', scale); });
+  setTimeout(scale, 100);
+  setTimeout(scale, 500);
+  setTimeout(scale, 1500);
+  setTimeout(scale, 3000);
+})();
+</script>
+</body>
+</html>

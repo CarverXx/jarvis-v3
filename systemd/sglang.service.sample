@@ -1,0 +1,27 @@
+[Unit]
+Description=SGLang OpenAI-compatible server (Qwen3.6-35B-A3B-FP8, 128K ctx, qwen3_coder tools)
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=YOUR_USERNAME
+Group=YOUR_USERNAME
+WorkingDirectory=/home/YOUR_USERNAME
+ExecStart=/home/YOUR_USERNAME/sglang-launcher.sh
+Restart=on-failure
+RestartSec=30
+StandardOutput=append:/home/YOUR_USERNAME/sglang.log
+StandardError=append:/home/YOUR_USERNAME/sglang.log
+
+# Warm-up and KV cache allocation are memory-intensive; widen timeout.
+TimeoutStartSec=300
+TimeoutStopSec=60
+
+# Keep CUDA / venv PATH
+Environment="CUDA_HOME=/usr/local/cuda-13.1"
+Environment="PATH=/opt/sglang-env/bin:/usr/local/cuda-13.1/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Environment="LD_LIBRARY_PATH=/usr/local/cuda-13.1/lib64"
+
+[Install]
+WantedBy=multi-user.target

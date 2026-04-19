@@ -1,0 +1,21 @@
+[Unit]
+Description=JARVIS v3 Hermes shim (OpenAI /v1/chat/completions → hermes CLI)
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=YOUR_USERNAME
+Group=YOUR_USERNAME
+WorkingDirectory=/home/YOUR_USERNAME/jarvis-v3
+ExecStart=/home/YOUR_USERNAME/jarvis-v3-venv/bin/python /home/YOUR_USERNAME/jarvis-v3/services/hermes_shim.py
+Restart=on-failure
+RestartSec=10
+StandardOutput=append:/home/YOUR_USERNAME/jarvis-v3-logs/hermes-shim.log
+StandardError=append:/home/YOUR_USERNAME/jarvis-v3-logs/hermes-shim.log
+
+Environment="PATH=/home/YOUR_USERNAME/.local/bin:/home/YOUR_USERNAME/jarvis-v3-venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Environment="HERMES_SHIM_PORT=8004"
+
+[Install]
+WantedBy=multi-user.target

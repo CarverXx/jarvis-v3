@@ -1,0 +1,27 @@
+[Unit]
+Description=JARVIS v3 Qwen3-ASR shim (OpenAI /v1/audio/transcriptions)
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=YOUR_USERNAME
+Group=YOUR_USERNAME
+WorkingDirectory=/home/YOUR_USERNAME/jarvis-v3
+ExecStart=/home/YOUR_USERNAME/jarvis-v3-venv/bin/python /home/YOUR_USERNAME/jarvis-v3/services/qwen3_asr_shim.py
+Restart=on-failure
+RestartSec=15
+StandardOutput=append:/home/YOUR_USERNAME/jarvis-v3-logs/qwen3-asr-shim.log
+StandardError=append:/home/YOUR_USERNAME/jarvis-v3-logs/qwen3-asr-shim.log
+
+# ~6 GB VRAM lazy-load on first request; give room.
+TimeoutStartSec=120
+
+Environment="PATH=/home/YOUR_USERNAME/jarvis-v3-venv/bin:/usr/local/cuda-13.1/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Environment="CUDA_HOME=/usr/local/cuda-13.1"
+Environment="LD_LIBRARY_PATH=/usr/local/cuda-13.1/lib64"
+Environment="QWEN3_ASR_SHIM_PORT=8002"
+Environment="QWEN3_ASR_MODEL_PATH=/home/YOUR_USERNAME/models/Qwen3-ASR-1.7B"
+
+[Install]
+WantedBy=multi-user.target

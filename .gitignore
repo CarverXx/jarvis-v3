@@ -1,0 +1,101 @@
+# JARVIS v3 — gitignore
+
+# ============================================================
+# Secrets & credentials — NEVER commit
+# ============================================================
+*.key
+*.token
+*.pem
+*.p12
+.env
+.env.local
+.env.*.local
+secrets/
+config/*.secret.*
+
+# If you hardcode an API key by mistake, `git diff --cached` will still show
+# it. Run `scripts/audit_no_secrets.py` before pushing.
+
+# ============================================================
+# Audio / model assets (large binaries — not for git)
+# ============================================================
+assets/*.wav
+assets/*.mp3
+assets/*.flac
+assets/*.m4a
+assets/*.pkl        # openWakeWord custom verifier (user-specific voiceprint)
+assets/*.wav.bak*   # trim/test backups
+assets/*.bak*
+
+# Voice / wake-word enrollment artefacts
+assets/wake_samples/
+scripts/*.wav
+
+# ============================================================
+# Logs & runtime state
+# ============================================================
+logs/
+*.log
+events.jsonl
+jarvis-v3-logs/
+
+# ============================================================
+# Python
+# ============================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# venv
+venv/
+env/
+.venv/
+.env.venv
+
+# ============================================================
+# Editors / OS
+# ============================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ============================================================
+# Vendor references (not redistributed)
+# ============================================================
+vendor/
+
+# ============================================================
+# Misc
+# ============================================================
+*.pid
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# User-specific personalization (see docs/customize.md)
+user_persona.py
+user_persona.yaml

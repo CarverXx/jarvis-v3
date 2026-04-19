@@ -1,0 +1,22 @@
+# JARVIS v3 deps
+# Core ASR / TTS / Wake Word / VAD
+qwen-asr>=0.0.6         # Qwen3-ASR-1.7B 官方 pip 包 (pulls torch 2.11 + cuda13 wheels)
+voxcpm>=0.1.0           # OpenBMB VoxCPM2 官方包
+openwakeword==0.4.0     # 固定 0.4.0 — 此版本只依赖 onnxruntime，避免 0.6+ 强依赖 tflite-runtime (Linux+Py3.12 无 wheel)
+onnxruntime>=1.24       # openwakeword + silero-vad 运行时
+silero-vad>=5.0         # Silero VAD (ONNX)
+
+# Audio I/O
+sounddevice>=0.5.0      # PortAudio / PipeWire 采集+播放
+soundfile>=0.13.0
+numpy>=2.0,<3.0
+scipy>=1.12.0           # scipy.signal resample
+
+# HTTP services (shim + daemon)
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+httpx>=0.28.0
+python-multipart>=0.0.20
+
+# Misc
+pydantic>=2.0

@@ -1,0 +1,30 @@
+[Unit]
+Description=JARVIS v3 VoxCPM2 TTS (streaming 48kHz)
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=YOUR_USERNAME
+Group=YOUR_USERNAME
+WorkingDirectory=/home/YOUR_USERNAME/jarvis-v3
+ExecStart=/home/YOUR_USERNAME/jarvis-v3-venv/bin/python /home/YOUR_USERNAME/jarvis-v3/services/voxcpm2_tts.py
+Restart=on-failure
+RestartSec=15
+StandardOutput=append:/home/YOUR_USERNAME/jarvis-v3-logs/voxcpm2-tts.log
+StandardError=append:/home/YOUR_USERNAME/jarvis-v3-logs/voxcpm2-tts.log
+
+# ~8 GB VRAM + 60s warmup on first load. Must exceed first-call generate time.
+TimeoutStartSec=180
+
+Environment="PATH=/home/YOUR_USERNAME/jarvis-v3-venv/bin:/usr/local/cuda-13.1/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Environment="CUDA_HOME=/usr/local/cuda-13.1"
+Environment="LD_LIBRARY_PATH=/usr/local/cuda-13.1/lib64"
+Environment="VOXCPM_PORT=8003"
+Environment="VOXCPM_LOCAL_PATH=/home/YOUR_USERNAME/models/VoxCPM2"
+# Disables torch._inductor cudagraph trees that crash under executor threading;
+# voxcpm2_tts.py also sets this in code, keep env as belt-and-braces.
+Environment="TORCHINDUCTOR_FX_GRAPH_REMOTE_CACHE=0"
+
+[Install]
+WantedBy=multi-user.target

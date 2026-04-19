@@ -1,0 +1,52 @@
+[Unit]
+Description=JARVIS v3 voice satellite (wake-word half-duplex daemon)
+After=network.target hermes-shim.service qwen3-asr-shim.service voxcpm2-tts.service sglang.service
+Wants=hermes-shim.service qwen3-asr-shim.service voxcpm2-tts.service
+
+# --- Customize before installing -----------------------------------------
+# 1. Replace YOUR_USERNAME with your Linux user (output of `whoami`).
+# 2. Replace YOUR_MIC_DEVICE / YOUR_SPEAKER_DEVICE with actual PulseAudio
+#    source/sink names. Find with:  `pactl list sources short | grep -v monitor`
+#    and  `pactl list sinks short`.
+# 3. Replace REPLACE_ME_WITH_YOUR_SGLANG_API_KEY with your SGLang `--api-key`
+#    value. Or delete the line if your SGLang runs without auth.
+# -------------------------------------------------------------------------
+
+[Service]
+Type=simple
+User=YOUR_USERNAME
+Group=YOUR_USERNAME
+SupplementaryGroups=audio
+WorkingDirectory=/home/YOUR_USERNAME/jarvis-v3
+ExecStart=/home/YOUR_USERNAME/jarvis-v3-venv/bin/python /home/YOUR_USERNAME/jarvis-v3/daemon/satellite.py
+Restart=on-failure
+RestartSec=10
+StandardOutput=append:/home/YOUR_USERNAME/jarvis-v3-logs/jarvis-v3.log
+StandardError=append:/home/YOUR_USERNAME/jarvis-v3-logs/jarvis-v3.log
+
+TimeoutStartSec=60
+
+Environment="PATH=/home/YOUR_USERNAME/jarvis-v3-venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Environment="XDG_RUNTIME_DIR=/run/user/1000"
+Environment="PULSE_SERVER=unix:/run/user/1000/pulse/native"
+
+# Use the mono-fallback source (1ch 16kHz) for cleanest ASR input. Avoid the
+# PipeWire aec_mic virtual source (2ch float32 48kHz) — its down-conversion
+# to 1ch 16kHz can silence the signal on some distros.
+Environment="PULSE_SOURCE=YOUR_MIC_DEVICE"
+Environment="PULSE_SINK=YOUR_SPEAKER_DEVICE"
+
+# Wake-word detection threshold (0.0 = always trigger, 1.0 = never).
+# Default 0.5 is conservative. With a custom verifier model (trained on
+# your voice via scripts/split_wake_recording.py) you can push to 0.7.
+Environment="WAKE_THRESHOLD=0.5"
+
+# SGLang API key — set to whatever `--api-key` you passed when launching
+# SGLang. Drop this line if SGLang runs without auth.
+Environment="SGLANG_API_KEY=REPLACE_ME_WITH_YOUR_SGLANG_API_KEY"
+
+# How long invoke_hermes will wait for the Hermes agent before giving up.
+Environment="HERMES_TIMEOUT_S=120"
+
+[Install]
+WantedBy=multi-user.target
