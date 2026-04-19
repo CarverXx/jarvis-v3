@@ -30,7 +30,7 @@ INVOKE_HERMES_SCHEMA: dict[str, Any] = {
         "name": "invoke_hermes",
         "description": (
             "委托给主意识 Hermes Agent 完成需要深度推理 / 多工具协作 / 访问文件系统 / "
-            "执行命令 / 实时联网搜索 / 操作家庭 NAS 或 Raphael 知识库 / 代码生成 / "
+            "执行命令 / 实时联网搜索 / 查用户的 Markdown 知识库 / 代码生成 / "
             "数据分析 / 长任务（预期 >3 秒）。Hermes 返回一段简短结果文本。"
         ),
         # timeout_s removed 2026-04-19 — LLM kept picking 30s even with default=90.

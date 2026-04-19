@@ -5,7 +5,7 @@
 > agent actually runs the commands.**
 
 <p align="center">
-  <img src="docs/images/hero-full.jpg" alt="JARVIS v3 — dual-brain architecture" width="820">
+  <em>Open the full-featured landing page at <a href="docs/landing.html">docs/landing.html</a> for a visual overview.</em>
 </p>
 
 Wake word ("Hey Jarvis") → low-latency reply for small talk → seamless hand-off
@@ -26,7 +26,7 @@ JARVIS v3 splits the two:
 | | Subconscious (潜意识) | Main consciousness / Hermes (主意识) |
 |---|---|---|
 | **Model** | SGLang-served Qwen3.6-35B-A3B-FP8 (hybrid MoE + Gated DeltaNet) | Hermes Agent CLI driven by the same SGLang backend |
-| **Role** | Conversational layer — replies to chit-chat, handles persona, decides when to escalate | Executor — runs `rag.search` / `web.search` / `fs.*` / `system.*` / `cf.*` / `raphael.*` tools through an MCP server |
+| **Role** | Conversational layer — replies to chit-chat, handles persona, decides when to escalate | Executor — runs `rag.search` / `web.search` / `fs.*` / `system.*` / `cf.*` / note-taking tools through an MCP server |
 | **Latency target** | TTFB < 1 s, ≤ 2 sentence replies | 5–30 s depending on tool depth |
 | **Mechanism** | OpenAI tool-calling — if the turn smells like "needs real work", return a `tool_calls[0]` with `invoke_hermes(task=...)` | Real agent loop: multi-step reasoning, tool retries, result summarisation |
 
@@ -39,9 +39,10 @@ streams 48 kHz audio back out the speaker.
 The user says **"Hey Jarvis, 你好"** — the subconscious replies directly,
 no tool call, 300 ms round-trip.
 
-The user asks **"Hey Jarvis, Raphael 里我有几台 VPS?"** — Hermes calls
-`rag.search`, finds the index, follows up with `fs.read` on the real Markdown
-file, returns a summary. The subconscious says it back. Real data, real sources.
+The user asks about something they've written in their own Markdown wiki —
+Hermes runs `rag.search`, finds the relevant file index, follows up with
+`fs.read` on the actual Markdown, returns a summary. The subconscious says
+it back. Real data, grounded in files you control.
 
 ## What makes this interesting
 
@@ -71,9 +72,12 @@ file, returns a summary. The subconscious says it back. Real data, real sources.
   progress bar. Watch your assistant think.
 
 - **A knowledge-base hook.** If you maintain a personal Markdown wiki
-  ([Karpathy-style LLM Wiki](https://github.com/karpathy/llm-wiki)), point
-  JARVIS at it and the agent can answer "how many VPSes do I have?" by
-  actually reading your wiki files, not by making things up.
+  (Karpathy-style "LLM Wiki" — a folder of `.md` files under
+  `vault/ref/` + `vault/wiki/`), point JARVIS at it and the agent can
+  answer questions grounded in your own notes, not by making things up.
+  The tool layer exposes `rag.search` (keyword match over the wiki) and
+  `fs.read` (open the actual file) — what the agent does with them is up to
+  whatever content you chose to put there.
 
 ## Architecture
 
@@ -108,34 +112,26 @@ file, returns a summary. The subconscious says it back. Real data, real sources.
 | `qwen3-asr-shim` | :8002 | FastAPI wrapper over `qwen_asr` Python API |
 | `voxcpm2-tts` | :8003 | FastAPI streaming 48 kHz int16 PCM, zero-shot voice cloning |
 | `hermes-shim` | :8004 | OpenAI `/v1/chat/completions` wrapper over Hermes Agent CLI |
-| `mcp-server` | :8005 | MCP tool server (fs/web/rag/cf/system/raphael namespaces) |
+| `mcp-server` | :8005 | MCP tool server (fs / web / rag / cf / system namespaces) |
 | `jarvis-v3` | — | Main daemon: mic, wake, VAD, state machine, audio player, TUI event emitter |
 
-## Quick tour
+## The terminal dashboard
 
-<p align="center">
-  <img src="docs/images/01-current.jpg" alt="State machine + mic/wake" width="820">
-</p>
+`jarvis-tui` (which is `python tui/dashboard.py`) tails a JSONL event stream
+emitted by the daemon and renders a live, six-panel [rich.Live](https://rich.readthedocs.io/)
+TUI:
 
-The state machine at the top of every TUI panel — you can see each turn
-travel IDLE → LISTENING → PROCESSING → RESPONDING → FOLLOW_UP_LISTEN, with
-a 30-second sparkline of mic RMS levels on the right.
+1. **State** — current state machine node + recent transitions, session id.
+2. **Mic / Wake** — RMS in dBFS + 30-second sparkline + peak wake score.
+3. **ASR** — last transcript with language detection + elapsed time.
+4. **Subconscious** — the user message + streaming reply tokens + any tool
+   call it issued.
+5. **Hermes** — "running …Xs" with a pulse animation while the agent is in
+   flight; shows final reply + success/fail status when done.
+6. **TTS** — playback progress bar, characters remaining, elapsed.
 
-<p align="center">
-  <img src="docs/images/02-current.jpg" alt="Subconscious streaming + Hermes tool use" width="820">
-</p>
-
-Subconscious tokens stream in as they're generated. If it decides to
-escalate, the `tool_call:` line shows exactly what task it handed to Hermes.
-The Hermes panel below pulses every 2 seconds while the agent is thinking.
-
-<p align="center">
-  <img src="docs/images/03-current.jpg" alt="TTS streaming + error tail" width="820">
-</p>
-
-VoxCPM2 streams audio in chunks — the progress bar fills while bytes are
-playing through the speaker. Any subsystem error surfaces in the bottom
-panel with a timestamp and component tag.
+Any subsystem error surfaces in the bottom panel with a timestamp and
+component tag.
 
 ## Install (Linux server + USB mic/speaker)
 
@@ -169,9 +165,10 @@ pip install -r ~/jarvis-v3/requirements.txt
 # Point ~/.hermes/config.yaml at your SGLang endpoint (http://127.0.0.1:8000/v1)
 
 # 5. API keys (optional — only if you want web search / Cloudflare ops)
+#    Replace REPLACE_ME with your own real key from tavily.com / dash.cloudflare.com
 mkdir -p ~/.config/jarvis && chmod 700 ~/.config/jarvis
-echo "tvly-your-key"   > ~/.config/jarvis/tavily.key && chmod 600 $_
-echo "cfat_your-token" > ~/.config/jarvis/cf.token   && chmod 600 $_
+echo "REPLACE_ME_TAVILY_KEY"     > ~/.config/jarvis/tavily.key && chmod 600 $_
+echo "REPLACE_ME_CLOUDFLARE_TOKEN" > ~/.config/jarvis/cf.token   && chmod 600 $_
 
 # 6. Install systemd units
 for f in ~/jarvis-v3/systemd/*.sample; do
@@ -262,7 +259,7 @@ for Qwen3-14B / Gemma-3-12B / Mistral-Small and accept the quality hit.
 - ✅ openWakeWord custom verifier loaded, per-voice tuning
 - ✅ VoxCPM2 zero-shot voice cloning, RMS stddev < 1 dB across turns
 - ✅ TUI dashboard renders live in any terminal, handles malformed events
-- ✅ Raphael-style markdown wiki support via `rag.search` + `fs.read`
+- ✅ Markdown wiki support via `rag.search` + `fs.read` (bring your own content)
 - ✅ Tool execution for files / web search / Cloudflare / system state
 - ✅ Comprehensive stress test: 97/97 passing (edge cases / concurrency / service crash recovery / 20-turn sessions)
 
