@@ -332,7 +332,7 @@ jarvis-v3/
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+Apache License 2.0 — see [LICENSE](LICENSE).
 
 This project is a personal build for my home setup. Open-sourced in the hope
 that the dual-brain pattern and the half-duplex audio plumbing are useful to
