@@ -127,7 +127,7 @@ it back. Real data, grounded in files you control.
 
 ## The terminal dashboard
 
-`jarvis-tui` (which is `python tui/dashboard.py`) tails a JSONL event stream
+`python tui/dashboard.py` tails a JSONL event stream
 emitted by the daemon and renders a live, six-panel [rich.Live](https://rich.readthedocs.io/)
 TUI:
 
@@ -193,8 +193,7 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now sglang mcp-server qwen3-asr-shim voxcpm2-tts hermes-shim jarvis-v3
 
 # 8. Run the TUI dashboard (in another SSH session)
-sudo install -m 755 scripts/jarvis-tui /usr/local/bin/jarvis-tui   # once
-jarvis-tui
+python ~/jarvis-v3/tui/dashboard.py   # pass --events PATH to tail a non-default event log
 ```
 
 Now say **"Hey Jarvis"** at the mic.
